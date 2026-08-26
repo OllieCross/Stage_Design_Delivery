@@ -3,7 +3,9 @@
 FROM node:26-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --no-audit --no-fund
+# --ignore-scripts: the prisma generate postinstall needs the schema, which
+# is only copied in the builder stage (where prebuild regenerates it).
+RUN npm ci --ignore-scripts --no-audit --no-fund
 
 FROM node:26-alpine AS builder
 WORKDIR /app

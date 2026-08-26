@@ -1,11 +1,15 @@
 import { verifyAuthenticationResponse } from "@simplewebauthn/server";
 import type { AuthenticationResponseJSON } from "@simplewebauthn/server";
 import { NextRequest, NextResponse } from "next/server";
+import { clientKey, rateLimit } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { consumeChallenge, createSession } from "@/lib/session";
 import { rpID, rpOrigin } from "@/lib/webauthn";
 
 export async function POST(req: NextRequest) {
+  if (!rateLimit(clientKey(req, "auth"))) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
   const response = (await req.json().catch(() => null)) as AuthenticationResponseJSON | null;
   if (!response?.id) {
     return NextResponse.json({ error: "Bad request" }, { status: 400 });

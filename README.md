@@ -1,4 +1,4 @@
-# White Production — Stage Design Delivery Platform
+# White Production - Stage Design Delivery Platform
 
 Delivery platform and PWA for stage design projects: PDFs, images, CSV tables, and first-person
 3D stage tours (GLB models), grouped by project and version. Single-admin (passkey login),
@@ -34,7 +34,7 @@ npm run dev            # http://localhost:3000
 ## Production deployment
 
 Runs on a Docker host behind an existing Traefik proxy (external network named `traefik`,
-entrypoint `websecure`, cert resolver `letsencrypt` — adjust labels in `docker-compose.yml`
+entrypoint `websecure`, cert resolver `letsencrypt` - adjust labels in `docker-compose.yml`
 if your Traefik setup differs).
 
 ```bash
@@ -42,9 +42,16 @@ cp .env.example .env   # fill in real secrets
 docker compose up -d --build
 ```
 
-Services: `web` (Next.js standalone), `postgres` (17), `minio`, and a one-shot `minio-init`
-that creates the bucket. Postgres and MinIO are on an internal network only; nothing but the
+Services: `web` (Next.js standalone), `postgres` (17), `minio`, a one-shot `minio-init`
+that creates the bucket, and a one-shot `migrate` that applies Prisma migrations before
+the app starts. Postgres and MinIO are on an internal network only; nothing but the
 web app is exposed through Traefik at `wp.olliecross.com`.
+
+### First-time setup
+
+After the first deploy, open `https://wp.olliecross.com/setup`, enter the `SETUP_TOKEN`
+from `.env`, and register your passkey (store it in 1Password). From then on, log in at
+`/login`. Registration always requires either the setup token or an active admin session.
 
 ### Backups
 
