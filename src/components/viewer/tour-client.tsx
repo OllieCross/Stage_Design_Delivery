@@ -9,7 +9,7 @@ const StageViewer = dynamic(() => import("./stage-viewer"), {
   ssr: false,
   loading: () => (
     <div className="flex h-dvh items-center justify-center">
-      <p className="text-muted text-sm tracking-widest uppercase">Loading viewer…</p>
+      <p className="text-muted text-sm tracking-widest uppercase">Loading viewer...</p>
     </div>
   ),
 });

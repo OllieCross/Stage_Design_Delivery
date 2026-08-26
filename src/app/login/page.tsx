@@ -46,7 +46,7 @@ export default function LoginPage() {
           disabled={busy}
           className="mt-8 w-full rounded-md bg-white px-4 py-3 text-sm font-semibold tracking-wide text-black uppercase transition hover:bg-neutral-200 disabled:opacity-50"
         >
-          {busy ? "Waiting for passkey…" : "Sign in with passkey"}
+          {busy ? "Waiting for passkey..." : "Sign in with passkey"}
         </button>
         {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
       </div>

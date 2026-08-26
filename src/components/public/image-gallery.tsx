@@ -95,7 +95,7 @@ export function ImageGallery({ images }: { images: Item[] }) {
                 }}
                 className="text-muted text-xs tracking-widest uppercase hover:text-white"
               >
-                ← Prev
+                Prev
               </button>
               <span className="text-muted text-xs">
                 {openIndex + 1} / {images.length}
@@ -107,7 +107,7 @@ export function ImageGallery({ images }: { images: Item[] }) {
                 }}
                 className="text-muted text-xs tracking-widest uppercase hover:text-white"
               >
-                Next →
+                Next
               </button>
             </div>
           )}

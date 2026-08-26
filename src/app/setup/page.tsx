@@ -61,7 +61,7 @@ function SetupForm() {
           disabled={busy || !token}
           className="mt-4 w-full rounded-md bg-white px-4 py-3 text-sm font-semibold tracking-wide text-black uppercase transition hover:bg-neutral-200 disabled:opacity-50"
         >
-          {busy ? "Waiting for passkey…" : "Register passkey"}
+          {busy ? "Waiting for passkey..." : "Register passkey"}
         </button>
         {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
       </div>

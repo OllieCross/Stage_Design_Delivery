@@ -36,7 +36,7 @@ export default async function AdminProjectPage(props: { params: Promise<{ id: st
             href="/admin"
             className="text-muted text-xs tracking-wide uppercase hover:text-white"
           >
-            ← Projects
+            Projects
           </Link>
           <h1 className="mt-1 text-xl font-bold tracking-tight uppercase">{project.name}</h1>
           <p className="text-muted text-sm">

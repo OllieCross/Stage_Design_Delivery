@@ -21,7 +21,7 @@ export function UploadZone({ versionId }: { versionId: string }) {
         setStatus(`${file.name} exceeds the 20 MB limit, skipped`);
         continue;
       }
-      setStatus(`Uploading ${file.name} (${done + 1}/${list.length})…`);
+      setStatus(`Uploading ${file.name} (${done + 1}/${list.length})...`);
       const body = new FormData();
       body.set("versionId", versionId);
       body.set("file", file);
@@ -59,7 +59,7 @@ export function UploadZone({ versionId }: { versionId: string }) {
             : "text-muted border-neutral-700 hover:border-neutral-500"
         }`}
       >
-        {busy ? "Uploading…" : "Drop files here or click to upload (max 20 MB each)"}
+        {busy ? "Uploading..." : "Drop files here or click to upload (max 20 MB each)"}
         <input
           ref={inputRef}
           type="file"
