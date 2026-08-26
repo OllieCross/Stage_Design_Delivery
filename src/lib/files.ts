@@ -1,0 +1,46 @@
+import type { FileType } from "@/generated/prisma/enums";
+
+const EXTENSION_TYPES: Record<string, FileType> = {
+  pdf: "PDF",
+  png: "IMAGE",
+  jpg: "IMAGE",
+  jpeg: "IMAGE",
+  webp: "IMAGE",
+  gif: "IMAGE",
+  avif: "IMAGE",
+  glb: "MODEL",
+  gltf: "MODEL",
+  csv: "CSV",
+};
+
+export function detectFileType(filename: string): FileType {
+  const ext = filename.split(".").pop()?.toLowerCase() ?? "";
+  return EXTENSION_TYPES[ext] ?? "OTHER";
+}
+
+export const FILE_TYPE_LABELS: Record<FileType, string> = {
+  MODEL: "3D Models",
+  PDF: "PDFs",
+  IMAGE: "Images",
+  CSV: "Tables",
+  OTHER: "Other",
+};
+
+/** Display order of file-type groups on project pages. */
+export const FILE_TYPE_ORDER: FileType[] = ["MODEL", "PDF", "IMAGE", "CSV", "OTHER"];
+
+export function s3KeyFor(projectId: string, versionId: string, filename: string) {
+  const safe = filename.replace(/[^\w.\- ]/g, "_");
+  return `projects/${projectId}/${versionId}/${crypto.randomUUID()}-${safe}`;
+}
+
+/** Cloned file records carry a `#versionId` suffix; the real object key precedes it. */
+export function resolveS3Key(s3Key: string) {
+  return s3Key.split("#")[0];
+}
+
+export function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
