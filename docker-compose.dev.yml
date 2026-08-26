@@ -31,6 +31,17 @@ services:
     volumes:
       - minio_data_dev:/data
 
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 2 &&
+      mc alias set local http://minio:9000 wp-minio wp-minio-secret &&
+      mc mb --ignore-existing local/wp-files
+      "
+
 volumes:
   pg_data_dev:
   minio_data_dev:

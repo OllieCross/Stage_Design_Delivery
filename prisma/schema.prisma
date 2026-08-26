@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Project {
+  id        String    @id @default(cuid())
+  slug      String    @unique
+  name      String
+  createdAt DateTime  @default(now())
+  deletedAt DateTime? // set when moved to trash; purged 7 days later
+  versions  Version[]
+}
+
+model Version {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  label     String // e.g. "v1", "v2"
+  createdAt DateTime @default(now())
+  files     File[]
+
+  @@unique([projectId, label])
+}
+
+enum FileType {
+  PDF
+  IMAGE
+  MODEL
+  CSV
+  OTHER
+}
+
+model File {
+  id          String         @id @default(cuid())
+  versionId   String
+  version     Version        @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  type        FileType
+  name        String
+  s3Key       String         @unique
+  size        Int
+  contentType String
+  createdAt   DateTime       @default(now())
+  presets     CameraPreset[]
+}
+
+model CameraPreset {
+  id     String @id @default(cuid())
+  fileId String
+  file   File   @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  name   String
+  x      Float
+  y      Float
+  z      Float
+  yaw    Float  @default(0)
+  pitch  Float  @default(0)
+  order  Int    @default(0)
+}
+
+// WebAuthn passkey for the single admin
+model Credential {
+  id         String   @id // base64url credential ID
+  publicKey  Bytes
+  counter    BigInt   @default(0)
+  transports String[]
+  createdAt  DateTime @default(now())
+}
