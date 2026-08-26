@@ -25,12 +25,15 @@
     "@simplewebauthn/server": "^13.3.3",
     "dotenv": "^17.4.2",
     "next": "16.3.3",
+    "papaparse": "^5.7.0",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "sharp": "^0.35.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^26.3.0",
+    "@types/papaparse": "^5.5.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9.39.5",
@@ -41,5 +44,8 @@
     "tailwindcss": "^4",
     "tsx": "^4.23.12",
     "typescript": "^5.9.3"
+  },
+  "allowScripts": {
+    "sharp@0.35.4": true
   }
 }
