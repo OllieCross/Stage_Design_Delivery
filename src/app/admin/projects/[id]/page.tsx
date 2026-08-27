@@ -6,7 +6,10 @@ import {
   DeleteVersionButton,
 } from "@/components/admin/danger-buttons";
 import { PresetEditor } from "@/components/admin/preset-editor";
+import { ProjectSettings } from "@/components/admin/project-settings";
 import { UploadZone } from "@/components/admin/upload-zone";
+import { VersionName } from "@/components/admin/version-name";
+import { formatDate, toDateInputValue } from "@/lib/dates";
 import { db } from "@/lib/db";
 import { FILE_TYPE_LABELS, FILE_TYPE_ORDER, formatBytes } from "@/lib/files";
 import { createVersion } from "@/server/actions";
@@ -41,10 +44,23 @@ export default async function AdminProjectPage(props: { params: Promise<{ id: st
           <h1 className="mt-1 text-xl font-bold tracking-tight uppercase">{project.name}</h1>
           <p className="text-muted text-sm">
             Public link: <span className="select-all">/projects/{project.slug}</span>
+            {" · "}
+            {formatDate(project.eventDate)}
+            {project.hidden && " · Hidden"}
           </p>
         </div>
         <TrashProjectButton projectId={project.id} />
       </div>
+
+      <ProjectSettings
+        project={{
+          id: project.id,
+          name: project.name,
+          slug: project.slug,
+          eventDate: toDateInputValue(project.eventDate),
+          hidden: project.hidden,
+        }}
+      />
 
       <form action={createVersion} className="mt-8 flex flex-wrap items-center gap-3">
         <input type="hidden" name="projectId" value={project.id} />
@@ -67,7 +83,7 @@ export default async function AdminProjectPage(props: { params: Promise<{ id: st
       {project.versions.map((version) => (
         <section key={version.id} className="mt-10 rounded-lg border border-neutral-800 p-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold uppercase">{version.label}</h2>
+            <VersionName version={{ id: version.id, label: version.label }} />
             <DeleteVersionButton versionId={version.id} label={version.label} />
           </div>
 

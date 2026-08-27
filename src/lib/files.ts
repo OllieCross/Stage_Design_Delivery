@@ -45,6 +45,10 @@ export function resolveS3Key(s3Key: string) {
   return s3Key.split("#")[0];
 }
 
+export function formatGigabytes(bytes: number) {
+  return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
+}
+
 export function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;

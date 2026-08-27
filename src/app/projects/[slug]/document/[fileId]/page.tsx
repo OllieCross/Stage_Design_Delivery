@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PdfClient } from "@/components/public/pdf-client";
 import { db } from "@/lib/db";
+import { isAdmin } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -11,13 +12,18 @@ export default async function DocumentPage(props: {
   const { slug, fileId } = await props.params;
   const file = await db.file.findUnique({
     where: { id: fileId },
-    include: { version: { include: { project: { select: { slug: true, deletedAt: true } } } } },
+    include: {
+      version: {
+        include: { project: { select: { slug: true, deletedAt: true, hidden: true } } },
+      },
+    },
   });
   if (
     !file ||
     file.type !== "PDF" ||
     file.version.project.slug !== slug ||
-    file.version.project.deletedAt
+    file.version.project.deletedAt ||
+    (file.version.project.hidden && !(await isAdmin()))
   ) {
     notFound();
   }

@@ -13,7 +13,8 @@ export default function PdfViewer({ url }: { url: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [pageCount, setPageCount] = useState(0);
   const [width, setWidth] = useState(0);
-  const [scale, setScale] = useState(1);
+  // Documents open at 75%: an A3 plot fits on screen without immediate zooming.
+  const [scale, setScale] = useState(0.75);
   const [error, setError] = useState<string | null>(null);
 
   // Render pages at the container's width so A3 plots fill the screen.

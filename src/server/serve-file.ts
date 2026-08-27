@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { resolveS3Key } from "@/lib/files";
 import { getObjectStream } from "@/lib/s3";
+import { isAdmin } from "@/lib/session";
 
 /**
  * Streams a stored file to the client. Files are public by design: anyone
@@ -11,9 +12,13 @@ import { getObjectStream } from "@/lib/s3";
 export async function serveFile(fileId: string, disposition: "inline" | "attachment") {
   const file = await db.file.findUnique({
     where: { id: fileId },
-    include: { version: { include: { project: { select: { deletedAt: true } } } } },
+    include: { version: { include: { project: { select: { deletedAt: true, hidden: true } } } } },
   });
   if (!file || file.version.project.deletedAt) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  // Files of a hidden project are admin-only, like the project page itself.
+  if (file.version.project.hidden && !(await isAdmin())) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

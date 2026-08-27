@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { TourClient } from "@/components/viewer/tour-client";
 import { db } from "@/lib/db";
+import { isAdmin } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,9 @@ export default async function TourPage(props: {
   const file = await db.file.findUnique({
     where: { id: fileId },
     include: {
-      version: { include: { project: { select: { slug: true, deletedAt: true } } } },
+      version: {
+        include: { project: { select: { slug: true, deletedAt: true, hidden: true } } },
+      },
       presets: { orderBy: { order: "asc" } },
     },
   });
@@ -19,7 +22,8 @@ export default async function TourPage(props: {
     !file ||
     file.type !== "MODEL" ||
     file.version.project.slug !== slug ||
-    file.version.project.deletedAt
+    file.version.project.deletedAt ||
+    (file.version.project.hidden && !(await isAdmin()))
   ) {
     notFound();
   }

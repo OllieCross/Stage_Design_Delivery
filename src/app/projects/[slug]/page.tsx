@@ -2,9 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CsvTable } from "@/components/public/csv-table";
 import { ImageGallery } from "@/components/public/image-gallery";
+import { formatDate } from "@/lib/dates";
 import { db } from "@/lib/db";
 import { BEAMS_ENABLED } from "@/lib/features";
 import { FILE_TYPE_LABELS, formatBytes } from "@/lib/files";
+import { isAdmin } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +29,8 @@ export default async function ProjectPage(props: {
     },
   });
   if (!project || project.deletedAt || project.versions.length === 0) notFound();
+  // A hidden project is admin-only, including by direct link.
+  if (project.hidden && !(await isAdmin())) notFound();
 
   const selected = project.versions.find((v) => v.label === versionParam) ?? project.versions[0];
 
@@ -49,6 +53,10 @@ export default async function ProjectPage(props: {
           White Production
         </Link>
         <h1 className="mt-2 text-3xl font-bold tracking-tight uppercase">{project.name}</h1>
+        <p className="text-muted mt-1 text-xs tracking-widest uppercase">
+          {formatDate(project.eventDate)}
+          {project.hidden && " · Hidden"}
+        </p>
 
         <nav className="mt-6 flex flex-wrap gap-2" aria-label="Versions">
           {project.versions.map((v) => (

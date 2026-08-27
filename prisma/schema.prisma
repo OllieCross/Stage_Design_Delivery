@@ -11,6 +11,11 @@ model Project {
   id        String    @id @default(cuid())
   slug      String    @unique
   name      String
+  // Date of the event itself. Null means the project has no date yet and is
+  // shown as "Concept".
+  eventDate DateTime?
+  // Hidden projects are visible to the admin only, including by direct link.
+  hidden    Boolean   @default(false)
   createdAt DateTime  @default(now())
   deletedAt DateTime? // set when moved to trash; purged 7 days later
   versions  Version[]

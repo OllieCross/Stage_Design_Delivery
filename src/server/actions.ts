@@ -38,14 +38,59 @@ export async function createProject(formData: FormData) {
   redirect(`/admin/projects/${project.id}`);
 }
 
-export async function renameProject(formData: FormData) {
+/**
+ * Updates a project's settings. Changing the slug changes the public URL, so
+ * any link already shared stops working - the form warns about that.
+ */
+export async function updateProject(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id"));
   const name = String(formData.get("name") ?? "").trim();
-  if (!name) throw new Error("Name required");
-  await db.project.update({ where: { id }, data: { name } });
+  const slug = slugify(String(formData.get("slug") ?? ""));
+  const eventDateRaw = String(formData.get("eventDate") ?? "").trim();
+  const hidden = formData.get("hidden") === "on";
+
+  if (!name) throw new Error("Name is required");
+  if (!SLUG_RE.test(slug)) throw new Error("Slug must be lowercase words separated by hyphens");
+
+  const clash = await db.project.findFirst({ where: { slug, id: { not: id } } });
+  if (clash) throw new Error(`Another project already uses the slug "${slug}"`);
+
+  await db.project.update({
+    where: { id },
+    data: {
+      name,
+      slug,
+      hidden,
+      // A date-only input has no timezone; store it at midnight UTC so it
+      // cannot drift a day either way.
+      eventDate: eventDateRaw ? new Date(`${eventDateRaw}T00:00:00Z`) : null,
+    },
+  });
+
+  revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath(`/admin/projects/${id}`);
+  revalidatePath(`/projects/${slug}`);
+}
+
+export async function renameVersion(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  const label = String(formData.get("label") ?? "").trim();
+  if (!label) throw new Error("Version name is required");
+
+  const version = await db.version.findUnique({ where: { id }, include: { project: true } });
+  if (!version) return;
+
+  const clash = await db.version.findFirst({
+    where: { projectId: version.projectId, label, id: { not: id } },
+  });
+  if (clash) throw new Error(`This project already has a version called "${label}"`);
+
+  await db.version.update({ where: { id }, data: { label } });
+  revalidatePath(`/admin/projects/${version.projectId}`);
+  revalidatePath(`/projects/${version.project.slug}`);
 }
 
 export async function trashProject(formData: FormData) {

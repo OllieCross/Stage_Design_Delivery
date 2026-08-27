@@ -1,22 +1,31 @@
 import Link from "next/link";
+import { formatDate } from "@/lib/dates";
 import { db } from "@/lib/db";
+import { formatGigabytes } from "@/lib/files";
 import { createProject, restoreProject } from "@/server/actions";
+import { totalStorageBytes } from "@/server/storage";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminHome() {
-  const [projects, trashed] = await Promise.all([
+  const [projects, trashed, storageBytes] = await Promise.all([
     db.project.findMany({
       where: { deletedAt: null },
       orderBy: { createdAt: "desc" },
       include: { _count: { select: { versions: true } } },
     }),
     db.project.findMany({ where: { deletedAt: { not: null } }, orderBy: { deletedAt: "desc" } }),
+    totalStorageBytes(),
   ]);
 
   return (
     <main className="mx-auto max-w-3xl">
-      <h1 className="text-xl font-bold tracking-tight uppercase">Projects</h1>
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h1 className="text-xl font-bold tracking-tight uppercase">Projects</h1>
+        <p className="text-muted text-xs tracking-widest uppercase">
+          {formatGigabytes(storageBytes)} stored
+        </p>
+      </div>
 
       <form action={createProject} className="mt-6 flex flex-col gap-3 sm:flex-row">
         <input
@@ -43,12 +52,18 @@ export default async function AdminHome() {
               href={`/admin/projects/${p.id}`}
               className="flex items-center justify-between px-2 py-4 transition hover:bg-neutral-900"
             >
-              <div>
+              <div className="min-w-0">
                 <span className="font-semibold">{p.name}</span>
                 <span className="text-muted ml-3 text-sm">/{p.slug}</span>
+                {p.hidden && (
+                  <span className="text-muted ml-3 border border-neutral-700 px-1.5 py-0.5 text-[10px] tracking-widest uppercase">
+                    Hidden
+                  </span>
+                )}
               </div>
-              <span className="text-muted text-sm">
-                {p._count.versions} version{p._count.versions === 1 ? "" : "s"}
+              <span className="text-muted shrink-0 text-sm">
+                {formatDate(p.eventDate)} · {p._count.versions} version
+                {p._count.versions === 1 ? "" : "s"}
               </span>
             </Link>
           </li>
@@ -68,9 +83,7 @@ export default async function AdminHome() {
               <li key={p.id} className="flex items-center justify-between px-2 py-3">
                 <span className="text-muted text-sm">
                   {p.name}
-                  <span className="ml-3">
-                    deleted {p.deletedAt ? new Date(p.deletedAt).toLocaleDateString("en-GB") : ""}
-                  </span>
+                  <span className="ml-3">deleted {formatDate(p.deletedAt)}</span>
                 </span>
                 <form action={restoreProject}>
                   <input type="hidden" name="id" value={p.id} />
