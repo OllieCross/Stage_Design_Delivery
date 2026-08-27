@@ -21,8 +21,9 @@ model Version {
   projectId String
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   label     String // e.g. "v1", "v2"
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
   files     File[]
+  fixtures  Fixture[]
 
   @@unique([projectId, label])
 }
@@ -32,6 +33,7 @@ enum FileType {
   IMAGE
   MODEL
   CSV
+  MVR
   OTHER
 }
 
@@ -46,6 +48,32 @@ model File {
   contentType String
   createdAt   DateTime       @default(now())
   presets     CameraPreset[]
+  fixtures    Fixture[]
+}
+
+// Lighting fixture extracted from an uploaded MVR scene. Positions are stored
+// already converted to the viewer's coordinate system (meters, Y-up).
+model Fixture {
+  id           String  @id @default(cuid())
+  versionId    String
+  version      Version @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  sourceFileId String
+  sourceFile   File    @relation(fields: [sourceFileId], references: [id], onDelete: Cascade)
+  name         String
+  gdtfSpec     String?
+  x            Float
+  y            Float
+  z            Float
+  // Beam aim as a unit direction vector in viewer space.
+  dirX         Float
+  dirY         Float
+  dirZ         Float
+  kind         String  @default("wash") // classified from the fixture name; drives beam optics
+  beamAngle    Float   @default(15) // degrees
+  colorHex     String  @default("#ffffff")
+  intensity    Float   @default(1)
+  universe     Int?
+  address      Int?
 }
 
 model CameraPreset {

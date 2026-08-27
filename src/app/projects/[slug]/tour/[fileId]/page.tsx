@@ -24,10 +24,27 @@ export default async function TourPage(props: {
     notFound();
   }
 
+  // Fixtures come from an MVR uploaded alongside the model in the same version.
+  const fixtures = await db.fixture.findMany({
+    where: { versionId: file.versionId },
+    select: {
+      id: true,
+      name: true,
+      kind: true,
+      x: true,
+      y: true,
+      z: true,
+      dirX: true,
+      dirY: true,
+      dirZ: true,
+    },
+  });
+
   return (
     <TourClient
       modelUrl={`/api/files/${file.id}/raw`}
       presets={file.presets}
+      fixtures={fixtures}
       backHref={`/projects/${slug}`}
       name={file.name}
     />

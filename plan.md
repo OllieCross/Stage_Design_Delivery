@@ -126,15 +126,15 @@ Goal: GitHub push ready and live.
 
 Deliverable: `git push`, `docker compose up -d` on the server, site live behind Traefik.
 
-## Stage 9 (later phase): Lit beams
+## Stage 9: Lit beams (done)
 
-Deferred until the basic tour works.
+Fixture ingestion and beam rendering are implemented. Capture writes stub GDTF profiles (generic Dimmer channels, no <Beam> physical data), and MVR carries no DMX levels, so optics are derived from the fixture type and the look is set in the viewer.
 
-- Workflow: export glTF from Capture (includes fixture data via `CAPTURE_model` extension) plus a static DMX/patch snapshot.
-- Parse fixture positions/orientations; render beams as volumetric cone shaders in Three.js; optional 360° panorama mode rendered in Capture as a high-fidelity fallback.
+- Workflow: the lighting rig is uploaded as an MVR export from Capture; fixtures are parsed server-side into the database.
+- Fixture positions and aim come from the MVR matrices (converted from MVR millimeters, Z-up to viewer meters, Y-up); beams render as instanced additive cones, one draw call per fixture kind.
 
 ---
 
 ## Suggested order of work
 
-Stages 0 → 8 are sequential; each ends in a working, demoable state. Stage 9 is independent and can start any time after Stage 5.
+Stages 0-8 are sequential; each ends in a working, demoable state. Stage 9 builds on Stage 5.

@@ -33,7 +33,10 @@ export default async function ProjectPage(props: {
   const pdfs = selected.files.filter((f) => f.type === "PDF");
   const images = selected.files.filter((f) => f.type === "IMAGE");
   const csvs = selected.files.filter((f) => f.type === "CSV");
+  const scenes = selected.files.filter((f) => f.type === "MVR");
   const other = selected.files.filter((f) => f.type === "OTHER");
+
+  const fixtureCount = await db.fixture.count({ where: { versionId: selected.id } });
 
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-12">
@@ -145,6 +148,33 @@ export default async function ProjectPage(props: {
           <CsvTable fileId={f.id} />
         </section>
       ))}
+
+      {scenes.length > 0 && (
+        <section className="mt-12">
+          <h2 className="text-muted text-xs font-bold tracking-widest uppercase">
+            {FILE_TYPE_LABELS.MVR}
+          </h2>
+          <ul className="mt-4 divide-y divide-neutral-800 border-y border-neutral-800">
+            {scenes.map((f) => (
+              <li key={f.id} className="flex items-center justify-between gap-4 px-2 py-4">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{f.name}</p>
+                  <p className="text-muted text-xs">
+                    {formatBytes(f.size)}
+                    {fixtureCount > 0 && ` · ${fixtureCount} fixtures lighting the 3D tour`}
+                  </p>
+                </div>
+                <a
+                  href={`/api/files/${f.id}/download`}
+                  className="text-muted shrink-0 text-xs tracking-widest uppercase hover:text-white"
+                >
+                  Download
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {other.length > 0 && (
         <section className="mt-12">

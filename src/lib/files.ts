@@ -15,6 +15,7 @@ const EXTENSION_TYPES: Record<string, FileType> = {
   glb: "MODEL",
   gltf: "MODEL",
   csv: "CSV",
+  mvr: "MVR",
 };
 
 export function detectFileType(filename: string): FileType {
@@ -27,11 +28,12 @@ export const FILE_TYPE_LABELS: Record<FileType, string> = {
   PDF: "PDFs",
   IMAGE: "Images",
   CSV: "Tables",
+  MVR: "Lighting Scenes",
   OTHER: "Other",
 };
 
 /** Display order of file-type groups on project pages. */
-export const FILE_TYPE_ORDER: FileType[] = ["MODEL", "PDF", "IMAGE", "CSV", "OTHER"];
+export const FILE_TYPE_ORDER: FileType[] = ["MODEL", "PDF", "IMAGE", "CSV", "MVR", "OTHER"];
 
 export function s3KeyFor(projectId: string, versionId: string, filename: string) {
   const safe = filename.replace(/[^\w.\- ]/g, "_");

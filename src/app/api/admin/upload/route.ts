@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { MAX_FILE_SIZE, MAX_FILE_SIZE_LABEL, detectFileType, s3KeyFor } from "@/lib/files";
+import { classifyFixture } from "@/lib/fixture-kinds";
+import { parseMvr } from "@/lib/mvr";
 import { putObject } from "@/lib/s3";
 import { isAdmin } from "@/lib/session";
 
@@ -29,12 +31,14 @@ export async function POST(req: NextRequest) {
 
   const contentType = file.type || "application/octet-stream";
   const key = s3KeyFor(version.projectId, version.id, file.name);
-  await putObject(key, Buffer.from(await file.arrayBuffer()), contentType);
+  const bytes = Buffer.from(await file.arrayBuffer());
+  await putObject(key, bytes, contentType);
 
+  const type = detectFileType(file.name);
   const record = await db.file.create({
     data: {
       versionId,
-      type: detectFileType(file.name),
+      type,
       name: file.name,
       s3Key: key,
       size: file.size,
@@ -42,5 +46,41 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  return NextResponse.json({ id: record.id, name: record.name, type: record.type });
+  // An MVR carries the lighting rig: extract its fixtures so the 3D tour can
+  // render beams. A malformed archive must not fail the upload itself.
+  let fixtureCount = 0;
+  if (type === "MVR") {
+    try {
+      const fixtures = parseMvr(new Uint8Array(bytes));
+      if (fixtures.length > 0) {
+        await db.fixture.createMany({
+          data: fixtures.map((f) => ({
+            versionId,
+            sourceFileId: record.id,
+            name: f.name,
+            gdtfSpec: f.gdtfSpec,
+            kind: classifyFixture(f.name, f.gdtfSpec),
+            x: f.x,
+            y: f.y,
+            z: f.z,
+            dirX: f.dirX,
+            dirY: f.dirY,
+            dirZ: f.dirZ,
+            universe: f.universe,
+            address: f.address,
+          })),
+        });
+        fixtureCount = fixtures.length;
+      }
+    } catch (e) {
+      console.error("[upload] MVR parse failed", e);
+    }
+  }
+
+  return NextResponse.json({
+    id: record.id,
+    name: record.name,
+    type: record.type,
+    fixtureCount,
+  });
 }

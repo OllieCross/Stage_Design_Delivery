@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { Preset } from "./types";
+import type { Fixture, Preset } from "./types";
 
 // Three.js and the viewer load only on the client, and only on tour pages,
 // keeping the rest of the site light.
@@ -17,6 +17,7 @@ const StageViewer = dynamic(() => import("./stage-viewer"), {
 export function TourClient(props: {
   modelUrl: string;
   presets: Preset[];
+  fixtures: Fixture[];
   backHref: string;
   name: string;
 }) {

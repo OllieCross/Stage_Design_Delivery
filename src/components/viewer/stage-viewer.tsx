@@ -3,13 +3,22 @@
 import { PointerLockControls, useProgress } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import Link from "next/link";
-import { Suspense, useRef, useState } from "react";
+import { Suspense, useMemo, useRef, useState } from "react";
+import { Beams } from "./beams";
 import { DragLook } from "./drag-look";
 import { GyroLook } from "./gyro-look";
+import { LightPanel } from "./light-panel";
 import { Movement } from "./movement";
 import { StageModel } from "./stage-model";
 import { TouchJoystick } from "./touch-joystick";
-import { EYE_HEIGHT, type Preset, type ViewMode } from "./types";
+import {
+  DEFAULT_LIGHT_SETTINGS,
+  EYE_HEIGHT,
+  type Fixture,
+  type LightSettings,
+  type Preset,
+  type ViewMode,
+} from "./types";
 
 const LOCK_TARGET_ID = "viewer-canvas-lock";
 
@@ -42,14 +51,22 @@ async function requestGyroPermission(): Promise<boolean> {
 export default function StageViewer({
   modelUrl,
   presets,
+  fixtures,
   backHref,
   name,
 }: {
   modelUrl: string;
   presets: Preset[];
+  fixtures: Fixture[];
   backHref: string;
   name: string;
 }) {
+  const [lights, setLights] = useState<LightSettings>(DEFAULT_LIGHT_SETTINGS);
+  const kindCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const f of fixtures) counts.set(f.kind, (counts.get(f.kind) ?? 0) + 1);
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  }, [fixtures]);
   const [mode, setMode] = useState<ViewMode>("bird");
   const [locked, setLocked] = useState(false);
   // Rendered client-only (dynamic import with ssr: false), so window exists.
@@ -86,6 +103,7 @@ export default function StageViewer({
         <Suspense fallback={null}>
           <StageModel url={modelUrl} />
         </Suspense>
+        <Beams fixtures={fixtures} settings={lights} />
         <Movement mode={mode} joystick={joystick} presetRequest={presetRequest} />
         {!isTouch && (
           <PointerLockControls
@@ -118,6 +136,14 @@ export default function StageViewer({
           {name}
         </p>
         <div className="pointer-events-auto flex items-center gap-2">
+          {fixtures.length > 0 && (
+            <LightPanel
+              settings={lights}
+              onChange={setLights}
+              fixtureCount={fixtures.length}
+              kindCounts={kindCounts}
+            />
+          )}
           {isTouch && (
             <button
               onClick={toggleGyro}
