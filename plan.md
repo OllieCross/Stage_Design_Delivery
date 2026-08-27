@@ -60,7 +60,7 @@ Goal: full content management.
 - Project list with create (name + slug), rename, delete (moves to trash).
 - Trash view: restore or wait for purge; nightly cron (in-app or container cron) hard-deletes projects trashed more than 7 days ago, including S3 objects.
 - Version management inside project: create new version (optionally clone previous version's files), delete version.
-- File upload per version: drag-and-drop, multi-file, direct-to-MinIO via presigned URLs, 20 MB limit, type detection into groups (PDF / images / 3D models / CSV).
+- File upload per version: drag-and-drop, multi-file, direct-to-MinIO via presigned URLs, 50 MB limit, type detection into groups (PDF / images / 3D models / CSV).
 - Camera preset editor per model: list of presets with name + XYZ coordinate and yaw/pitch input fields.
 
 Deliverable: full admin workflow from empty database to a shareable project.

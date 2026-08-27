@@ -103,13 +103,12 @@ export default async function ProjectPage(props: {
                   <p className="text-muted text-xs">{formatBytes(f.size)}</p>
                 </div>
                 <div className="flex shrink-0 gap-4">
-                  <a
-                    href={`/api/files/${f.id}/raw`}
-                    target="_blank"
+                  <Link
+                    href={`/projects/${project.slug}/document/${f.id}`}
                     className="text-xs tracking-widest uppercase underline-offset-4 hover:underline"
                   >
                     View
-                  </a>
+                  </Link>
                   <a
                     href={`/api/files/${f.id}/download`}
                     className="text-muted text-xs tracking-widest uppercase hover:text-white"

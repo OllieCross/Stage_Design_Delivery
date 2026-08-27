@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { detectFileType, s3KeyFor } from "@/lib/files";
-import { MAX_FILE_SIZE, putObject } from "@/lib/s3";
+import { MAX_FILE_SIZE, MAX_FILE_SIZE_LABEL, detectFileType, s3KeyFor } from "@/lib/files";
+import { putObject } from "@/lib/s3";
 import { isAdmin } from "@/lib/session";
 
 export async function POST(req: NextRequest) {
@@ -16,7 +16,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "versionId and file required" }, { status: 400 });
   }
   if (file.size > MAX_FILE_SIZE) {
-    return NextResponse.json({ error: "File exceeds 20 MB limit" }, { status: 413 });
+    return NextResponse.json(
+      { error: `File exceeds ${MAX_FILE_SIZE_LABEL} limit` },
+      { status: 413 },
+    );
   }
 
   const version = await db.version.findUnique({ where: { id: versionId } });

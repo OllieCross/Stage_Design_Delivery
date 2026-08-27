@@ -22,7 +22,7 @@ There is only one stage designer, which is me, so a single admin account is suff
 
 ### Content & hierarchy
 
-Each event contains a flat file list grouped by file type, and these groups are themselves grouped by version. File versioning is required, as implied by the version-based grouping above. Files will realistically be no larger than 20 MB each. CSV tables do not need to be sortable, but they should be rendered nicely in the browser so they can be viewed properly. An event can contain multiple 3D models, not just one.
+Each event contains a flat file list grouped by file type, and these groups are themselves grouped by version. File versioning is required, as implied by the version-based grouping above. Uploads are capped at 50 MB per file. CSV tables do not need to be sortable, but they should be rendered nicely in the browser so they can be viewed properly. An event can contain multiple 3D models, not just one.
 
 ### 3D viewer UX
 

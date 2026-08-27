@@ -1,5 +1,9 @@
 import type { FileType } from "@/generated/prisma/enums";
 
+/** Upload size cap, shared by the client-side check and the upload route. */
+export const MAX_FILE_SIZE = 50 * 1024 * 1024;
+export const MAX_FILE_SIZE_LABEL = `${MAX_FILE_SIZE / 1024 / 1024} MB`;
+
 const EXTENSION_TYPES: Record<string, FileType> = {
   pdf: "PDF",
   png: "IMAGE",

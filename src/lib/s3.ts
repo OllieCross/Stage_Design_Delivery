@@ -10,8 +10,6 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const BUCKET = process.env.S3_BUCKET ?? "wp-files";
 
-export const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
-
 const s3 = new S3Client({
   endpoint: process.env.S3_ENDPOINT,
   region: process.env.S3_REGION ?? "us-east-1",
