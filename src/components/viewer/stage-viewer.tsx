@@ -4,6 +4,7 @@ import { PointerLockControls, useProgress } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import Link from "next/link";
 import { Suspense, useMemo, useRef, useState } from "react";
+import { BEAMS_ENABLED } from "@/lib/features";
 import { Beams } from "./beams";
 import { DragLook } from "./drag-look";
 import { GyroLook } from "./gyro-look";
@@ -51,7 +52,7 @@ async function requestGyroPermission(): Promise<boolean> {
 export default function StageViewer({
   modelUrl,
   presets,
-  fixtures,
+  fixtures: allFixtures,
   backHref,
   name,
 }: {
@@ -62,6 +63,7 @@ export default function StageViewer({
   name: string;
 }) {
   const [lights, setLights] = useState<LightSettings>(DEFAULT_LIGHT_SETTINGS);
+  const fixtures = useMemo(() => (BEAMS_ENABLED ? allFixtures : []), [allFixtures]);
   const kindCounts = useMemo(() => {
     const counts = new Map<string, number>();
     for (const f of fixtures) counts.set(f.kind, (counts.get(f.kind) ?? 0) + 1);

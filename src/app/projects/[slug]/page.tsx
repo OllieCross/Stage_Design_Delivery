@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { CsvTable } from "@/components/public/csv-table";
 import { ImageGallery } from "@/components/public/image-gallery";
 import { db } from "@/lib/db";
+import { BEAMS_ENABLED } from "@/lib/features";
 import { FILE_TYPE_LABELS, formatBytes } from "@/lib/files";
 
 export const dynamic = "force-dynamic";
@@ -36,7 +37,10 @@ export default async function ProjectPage(props: {
   const scenes = selected.files.filter((f) => f.type === "MVR");
   const other = selected.files.filter((f) => f.type === "OTHER");
 
-  const fixtureCount = await db.fixture.count({ where: { versionId: selected.id } });
+  // Fixtures are parsed and stored on upload, but stay invisible until beams ship.
+  const fixtureCount = BEAMS_ENABLED
+    ? await db.fixture.count({ where: { versionId: selected.id } })
+    : 0;
 
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-12">
