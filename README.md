@@ -33,7 +33,7 @@ npm run dev            # http://localhost:3000
 
 ## Production deployment
 
-Runs on a Docker host behind an existing Traefik proxy (external network named `traefik`,
+Runs on a Docker host behind an existing Traefik proxy (external network named `proxy`,
 entrypoint `websecure`, cert resolver `letsencrypt` - adjust labels in `docker-compose.yml`
 if your Traefik setup differs).
 
