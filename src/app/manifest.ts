@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "White Production",
     short_name: "White Prod",
-    description: "Stage design delivery platform",
+    description: "Stage design platform",
     start_url: "/",
     display: "standalone",
     background_color: "#0a0a0a",

@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "White Production",
-  description: "Stage design delivery platform",
+  description: "Stage design platform",
   robots: { index: false, follow: false },
   appleWebApp: {
     capable: true,
