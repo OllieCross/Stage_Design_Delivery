@@ -43,3 +43,6 @@ next-env.d.ts
 
 # generated prisma client
 /src/generated/
+
+# unnecessary files
+brainstorm.md
