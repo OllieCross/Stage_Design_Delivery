@@ -18,3 +18,47 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
 }
+
+.prose-changelog h1 {
+  @apply text-foreground mb-6 text-2xl font-black;
+}
+
+.prose-changelog h2 {
+  @apply text-foreground border-foreground/10 mt-10 mb-3 border-b pb-2 text-lg font-bold;
+}
+
+.prose-changelog h3 {
+  @apply text-muted mt-5 mb-2 text-sm font-semibold tracking-wider uppercase;
+}
+
+.prose-changelog p {
+  @apply text-foreground/80 mb-3 text-sm leading-relaxed;
+}
+
+.prose-changelog ul {
+  @apply mb-4 list-inside list-disc space-y-1;
+}
+
+.prose-changelog li {
+  @apply text-foreground/80 text-sm;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.prose-changelog {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  overflow-x: hidden;
+}
+
+.prose-changelog code {
+  @apply bg-foreground/5 text-foreground rounded px-1.5 py-0.5 text-xs;
+}
+
+.prose-changelog hr {
+  @apply border-foreground/10 my-2;
+}
+
+.prose-changelog a {
+  @apply text-foreground hover:underline;
+}
