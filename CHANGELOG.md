@@ -4,6 +4,14 @@ All notable changes to White Production are documented here.
 
 ---
 
+## v0.1.20 - 2026-09-11
+
+### Changed
+
+- **The project list is no longer public**: the home page used to show every non-hidden project to any visitor, with a "Login" link off to the side for the admin. It now shows nothing to a signed-out visitor except an "Edit" button that triggers the same passkey sign-in on the spot - no separate /login page, no project data fetched at all until that succeeds. Anyone with a specific project's link still opens it exactly as before; there is just no page left where projects can be browsed without the passkey. Once signed in, the project list, creation form, trash and shared HDRI environment manager all live on this same page - /admin now only redirects here.
+
+---
+
 ## v0.1.19 - 2026-09-11
 
 ### Changed

@@ -34,7 +34,7 @@ export async function createProject(formData: FormData) {
   const project = await db.project.create({
     data: { name, slug, versions: { create: { label: "v1" } } },
   });
-  revalidatePath("/admin");
+  revalidatePath("/");
   redirect(`/admin/projects/${project.id}`);
 }
 
@@ -69,7 +69,6 @@ export async function updateProject(formData: FormData) {
   });
 
   revalidatePath("/");
-  revalidatePath("/admin");
   revalidatePath(`/admin/projects/${id}`);
   revalidatePath(`/projects/${slug}`);
 }
@@ -97,15 +96,15 @@ export async function trashProject(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id"));
   await db.project.update({ where: { id }, data: { deletedAt: new Date() } });
-  revalidatePath("/admin");
-  redirect("/admin");
+  revalidatePath("/");
+  redirect("/");
 }
 
 export async function restoreProject(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id"));
   await db.project.update({ where: { id }, data: { deletedAt: null } });
-  revalidatePath("/admin");
+  revalidatePath("/");
 }
 
 // --- Versions ---
@@ -201,7 +200,7 @@ export async function deleteHdriAsset(formData: FormData) {
   if (!asset) return;
   await deleteObject(asset.s3Key);
   await db.hdriAsset.delete({ where: { variant } });
-  revalidatePath("/admin");
+  revalidatePath("/");
 }
 
 // --- Camera presets ---

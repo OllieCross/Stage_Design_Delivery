@@ -1,7 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 const SOCIAL_LINKS = [
   {
@@ -69,10 +66,6 @@ const SOCIAL_LINKS = [
 ];
 
 export function Footer() {
-  const pathname = usePathname();
-
-  if (pathname === "/login") return null;
-
   return (
     <footer className="border-foreground/10 mt-auto border-t px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
       <div className="text-muted mx-auto flex max-w-3xl items-center justify-between text-xs">

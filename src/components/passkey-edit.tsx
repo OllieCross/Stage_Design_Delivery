@@ -4,7 +4,14 @@ import { startAuthentication } from "@simplewebauthn/browser";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function LoginPage() {
+/**
+ * Passkey sign-in, embedded directly on the main page rather than behind a
+ * separate /login route - a visitor who only has a project link never sees
+ * anything to click through to a "login" page; there's nothing here for them
+ * but this. The WebAuthn ceremony itself (options/verify, session cookie) is
+ * unchanged from the old /login page - only where this UI lives moved.
+ */
+export function PasskeyEdit() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -27,29 +34,25 @@ export default function LoginPage() {
       if (!verifyRes.ok) {
         throw new Error((await verifyRes.json()).error ?? "Verification failed");
       }
-      router.push("/admin");
+      // Already on the page that shows the admin view once authenticated -
+      // no navigation needed, just re-render this route as an admin.
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Login failed");
-    } finally {
       setBusy(false);
     }
   }
 
   return (
-    <main className="flex flex-1 items-center justify-center p-6">
-      <div className="w-full max-w-sm text-center">
-        <h1 className="text-2xl font-bold tracking-tight uppercase">Admin Login</h1>
-        <p className="text-muted mt-2 text-sm">Sign in with your passkey.</p>
-        <button
-          onClick={login}
-          disabled={busy}
-          className="mt-8 w-full rounded-md bg-white px-4 py-3 text-sm font-semibold tracking-wide text-black uppercase transition hover:bg-neutral-200 disabled:opacity-50"
-        >
-          {busy ? "Waiting for passkey..." : "Sign in with passkey"}
-        </button>
-        {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
-      </div>
-    </main>
+    <div>
+      <button
+        onClick={login}
+        disabled={busy}
+        className="border border-neutral-700 px-3 py-2 text-xs font-semibold tracking-widest uppercase transition hover:border-white hover:text-white disabled:opacity-50"
+      >
+        {busy ? "Waiting for passkey..." : "Edit"}
+      </button>
+      {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
+    </div>
   );
 }

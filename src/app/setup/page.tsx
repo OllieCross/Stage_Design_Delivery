@@ -33,7 +33,7 @@ function SetupForm() {
       if (!verifyRes.ok) {
         throw new Error((await verifyRes.json()).error ?? "Verification failed");
       }
-      router.push("/admin");
+      router.push("/");
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Registration failed");

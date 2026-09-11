@@ -4,7 +4,7 @@ import { LogoutButton } from "@/components/logout-button";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   if (!(await isAdmin())) {
-    redirect("/login");
+    redirect("/");
   }
   return (
     <div className="flex flex-1 flex-col">
