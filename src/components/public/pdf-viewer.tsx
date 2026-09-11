@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { PDFDocumentProxy } from "pdfjs-dist";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
@@ -9,9 +10,19 @@ import "react-pdf/dist/Page/TextLayer.css";
 // under a strict origin policy.
 pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
+// How far outside the viewport a page is mounted (and unmounted) at. Large
+// enough that scrolling feels instant, small enough that a 60-page pack
+// never has more than a handful of canvases live at once.
+const ROOT_MARGIN = "800px 0px";
+
 export default function PdfViewer({ url }: { url: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const sentinelsRef = useRef(new Map<number, HTMLDivElement>());
   const [pageCount, setPageCount] = useState(0);
+  // Natural (scale-1) aspect ratio per page, so an unmounted page can still
+  // reserve its correct height and the scrollbar doesn't jump around.
+  const [pageRatios, setPageRatios] = useState<number[]>([]);
+  const [visible, setVisible] = useState<Set<number>>(new Set());
   const [width, setWidth] = useState(0);
   // Documents open at 75%: an A3 plot fits on screen without immediate zooming.
   const [scale, setScale] = useState(0.75);
@@ -27,6 +38,43 @@ export default function PdfViewer({ url }: { url: string }) {
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
+
+  const onLoadSuccess = useCallback(async (pdf: PDFDocumentProxy) => {
+    setPageCount(pdf.numPages);
+    const pages = await Promise.all(
+      Array.from({ length: pdf.numPages }, (_, i) => pdf.getPage(i + 1)),
+    );
+    setPageRatios(
+      pages.map((page) => {
+        const vp = page.getViewport({ scale: 1 });
+        return vp.height / vp.width;
+      }),
+    );
+  }, []);
+
+  // Mount only pages within ROOT_MARGIN of the viewport; unmount the rest so
+  // a long document never holds more than a few rendered canvases at once.
+  useEffect(() => {
+    if (pageCount === 0) return;
+    const root = containerRef.current;
+    if (!root) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        setVisible((prev) => {
+          const next = new Set(prev);
+          for (const entry of entries) {
+            const n = Number((entry.target as HTMLElement).dataset.page);
+            if (entry.isIntersecting) next.add(n);
+            else next.delete(n);
+          }
+          return next;
+        });
+      },
+      { root, rootMargin: ROOT_MARGIN },
+    );
+    for (const el of sentinelsRef.current.values()) observer.observe(el);
+    return () => observer.disconnect();
+  }, [pageCount]);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -59,7 +107,7 @@ export default function PdfViewer({ url }: { url: string }) {
         ) : (
           <Document
             file={url}
-            onLoadSuccess={({ numPages }) => setPageCount(numPages)}
+            onLoadSuccess={onLoadSuccess}
             onLoadError={(e) => setError(e.message || "This PDF could not be displayed.")}
             loading={
               <p className="text-muted py-12 text-center text-sm tracking-widest uppercase">
@@ -68,16 +116,34 @@ export default function PdfViewer({ url }: { url: string }) {
             }
             className="flex flex-col items-center gap-4"
           >
-            {Array.from({ length: pageCount }, (_, i) => (
-              <Page
-                key={i}
-                pageNumber={i + 1}
-                width={width ? width * scale : undefined}
-                className="max-w-full shadow-lg"
-                renderAnnotationLayer={false}
-                renderTextLayer={false}
-              />
-            ))}
+            {Array.from({ length: pageCount }, (_, i) => {
+              const pageNumber = i + 1;
+              const renderedWidth = width ? width * scale : undefined;
+              const ratio = pageRatios[i];
+              const height = renderedWidth && ratio ? renderedWidth * ratio : undefined;
+              return (
+                <div
+                  key={pageNumber}
+                  data-page={pageNumber}
+                  ref={(el) => {
+                    if (el) sentinelsRef.current.set(pageNumber, el);
+                    else sentinelsRef.current.delete(pageNumber);
+                  }}
+                  style={height ? { minHeight: height } : undefined}
+                  className="flex max-w-full justify-center"
+                >
+                  {visible.has(pageNumber) && (
+                    <Page
+                      pageNumber={pageNumber}
+                      width={renderedWidth}
+                      className="max-w-full shadow-lg"
+                      renderAnnotationLayer={false}
+                      renderTextLayer={false}
+                    />
+                  )}
+                </div>
+              );
+            })}
           </Document>
         )}
       </div>

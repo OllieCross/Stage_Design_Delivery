@@ -4,6 +4,23 @@ All notable changes to White Production are documented here.
 
 ---
 
+## v0.1.17 - 2026-09-11
+
+### Fixed
+
+- **Not-found now returns HTTP 200**: `/projects/does-not-exist` rendered the correct not-found page but with a 200 status because a `loading.tsx` boundary streamed headers before `notFound()` ran; removed, restoring real 404s (trade-off: no loading flash on slow project pages)
+- **Thumbnails regenerated on every request**: `/api/files/[id]/thumb` now caches the derived webp under a `thumb/` prefix in MinIO, generated lazily on first request; cloned versions share the same cache entry as their source image, and the cache is cleaned up alongside the original when the last reference is deleted
+- **CSV re-parsed on every page view**: parsed rows are now cached for an hour via `unstable_cache`; the table also renders only the first 200 rows up front with a "show all" toggle, so a large export doesn't blow up the DOM on load
+- **PDF viewer rendered every page at once**: `pdf-viewer.tsx` now mounts only pages within ~800px of the viewport (via `IntersectionObserver`) and unmounts the rest, using each page's real aspect ratio for a placeholder so the scrollbar doesn't jump; a 60-page pack no longer allocates 60 canvases at once
+- **Version cloning's reference count was collision-prone**: `deleteFileObjectIfUnreferenced` matched other file records with a raw `startsWith(baseKey)`, which could in principle miscount if one original object key happened to be a literal string prefix of another's; it now requires an exact match or a `#`-boundary match
+
+### Added
+
+- **Upload rate limiting and content sniffing**: `/api/admin/upload` now rate-limits per client (60/min) and verifies the first bytes of PDFs, images, GLBs and MVRs against their declared extension, rejecting a mismatch instead of accepting and later serving it back under a spoofed content type
+- **Web container healthcheck**: a `/api/health` liveness route plus a Docker Compose healthcheck, so a hung Next.js process can be told apart from a healthy one
+
+---
+
 ## v0.1.16 - 2026-09-01
 
 ### Added

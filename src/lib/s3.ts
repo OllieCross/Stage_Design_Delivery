@@ -49,6 +49,19 @@ export async function getObjectStream(key: string) {
   return res.Body;
 }
 
+/** Like getObjectStream, but returns null instead of throwing when the key is missing. */
+export async function tryGetObject(key: string): Promise<Buffer | null> {
+  try {
+    const res = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
+    if (!res.Body) return null;
+    return Buffer.from(await new Response(res.Body as BodyInit).arrayBuffer());
+  } catch (e) {
+    const name = (e as { name?: string })?.name;
+    if (name === "NoSuchKey" || name === "NotFound") return null;
+    throw e;
+  }
+}
+
 export async function deleteObject(key: string) {
   await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: key }));
 }

@@ -162,11 +162,19 @@ export async function deleteVersion(formData: FormData) {
 
 async function deleteFileObjectIfUnreferenced(fileId: string, s3Key: string) {
   const baseKey = s3Key.split("#")[0];
+  // Exact match on the original key, or a "#" boundary for clones - not a raw
+  // startsWith(baseKey), which could miscount if one original key happened to
+  // be a literal string prefix of another's.
   const others = await db.file.count({
-    where: { id: { not: fileId }, s3Key: { startsWith: baseKey } },
+    where: {
+      id: { not: fileId },
+      OR: [{ s3Key: baseKey }, { s3Key: { startsWith: `${baseKey}#` } }],
+    },
   });
   if (others === 0) {
     await deleteObject(baseKey);
+    // Best-effort: the cached thumbnail (if any) has no other referrer either.
+    await deleteObject(`thumb/${baseKey}.webp`).catch(() => {});
   }
 }
 

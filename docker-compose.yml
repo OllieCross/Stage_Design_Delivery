@@ -22,6 +22,12 @@ services:
       - "traefik.http.routers.wp.tls.certresolver=letsencrypt"
       - "traefik.http.services.wp.loadbalancer.server.port=3000"
       - "traefik.docker.network=proxy"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- --spider http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
   # One-shot: applies pending Prisma migrations before the app starts.
   migrate:

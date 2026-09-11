@@ -1,14 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { MAX_FILE_SIZE, MAX_FILE_SIZE_LABEL, detectFileType, s3KeyFor } from "@/lib/files";
+import {
+  MAX_FILE_SIZE,
+  MAX_FILE_SIZE_LABEL,
+  detectFileType,
+  s3KeyFor,
+  verifyMagicBytes,
+} from "@/lib/files";
 import { classifyFixture } from "@/lib/fixture-kinds";
 import { parseMvr } from "@/lib/mvr";
+import { clientKey, rateLimit } from "@/lib/rate-limit";
 import { putObject } from "@/lib/s3";
 import { isAdmin } from "@/lib/session";
+
+// Generous compared to the auth endpoints' 10/min: a drag-and-drop batch of
+// photos or plots is many requests in quick succession from one admin.
+const UPLOAD_MAX_PER_WINDOW = 60;
 
 export async function POST(req: NextRequest) {
   if (!(await isAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!rateLimit(clientKey(req, "upload"), UPLOAD_MAX_PER_WINDOW)) {
+    return NextResponse.json({ error: "Too many uploads, slow down" }, { status: 429 });
   }
 
   const formData = await req.formData();
@@ -30,11 +44,17 @@ export async function POST(req: NextRequest) {
   }
 
   const contentType = file.type || "application/octet-stream";
-  const key = s3KeyFor(version.projectId, version.id, file.name);
   const bytes = Buffer.from(await file.arrayBuffer());
-  await putObject(key, bytes, contentType);
-
   const type = detectFileType(file.name);
+  if (!verifyMagicBytes(type, file.name, bytes)) {
+    return NextResponse.json(
+      { error: "File content doesn't match its extension" },
+      { status: 400 },
+    );
+  }
+
+  const key = s3KeyFor(version.projectId, version.id, file.name);
+  await putObject(key, bytes, contentType);
   const record = await db.file.create({
     data: {
       versionId,

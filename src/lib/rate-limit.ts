@@ -7,7 +7,7 @@ const MAX_PER_WINDOW = 10;
  * Fixed-window in-memory rate limiter for the auth endpoints. Single-node
  * deployment, so process-local state is sufficient.
  */
-export function rateLimit(key: string): boolean {
+export function rateLimit(key: string, max: number = MAX_PER_WINDOW): boolean {
   const now = Date.now();
   const bucket = buckets.get(key);
   if (!bucket || bucket.resetAt < now) {
@@ -18,7 +18,7 @@ export function rateLimit(key: string): boolean {
   if (buckets.size > 10_000) {
     for (const [k, b] of buckets) if (b.resetAt < now) buckets.delete(k);
   }
-  return bucket.count <= MAX_PER_WINDOW;
+  return bucket.count <= max;
 }
 
 export function clientKey(req: Request, scope: string) {

@@ -12,6 +12,7 @@ export async function purgeExpiredTrash() {
   });
   for (const p of expired) {
     await deletePrefix(`projects/${p.id}/`);
+    await deletePrefix(`thumb/projects/${p.id}/`);
     await db.project.delete({ where: { id: p.id } });
     console.log(`[purge] removed trashed project ${p.slug}`);
   }
