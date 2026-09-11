@@ -198,16 +198,16 @@ export default function StageViewer({
             />
           )}
           {isTouch && (
-            <button
-              onClick={toggleGyro}
-              className={`border px-3 py-2 text-xs font-semibold tracking-widest uppercase backdrop-blur transition ${
-                gyro
-                  ? "border-white bg-white text-black"
-                  : "text-muted border-neutral-700 bg-black/60 hover:text-white"
-              }`}
-            >
-              Gyro
-            </button>
+            <div className="overflow-hidden border border-neutral-700 bg-black/60 backdrop-blur">
+              <button
+                onClick={toggleGyro}
+                className={`px-3 py-2 text-xs font-semibold tracking-widest uppercase transition ${
+                  gyro ? "bg-white text-black" : "text-muted hover:text-white"
+                }`}
+              >
+                Gyro
+              </button>
+            </div>
           )}
           <div className="flex overflow-hidden border border-neutral-700 bg-black/60 backdrop-blur">
             {(["bird", "person"] as const).map((m) => (

@@ -22,16 +22,18 @@ export function LightPanel({
 
   return (
     <div className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        className={`border px-3 py-2 text-xs font-semibold tracking-widest uppercase backdrop-blur transition ${
-          settings.enabled
-            ? "border-white bg-white text-black"
-            : "text-muted border-neutral-700 bg-black/60 hover:text-white"
-        }`}
-      >
-        Lights
-      </button>
+      {/* Same border/bg/blur-on-the-wrapper recipe as the Bird/Person toggle,
+          so a lone button renders at the identical size as that group. */}
+      <div className="overflow-hidden border border-neutral-700 bg-black/60 backdrop-blur">
+        <button
+          onClick={() => setOpen(!open)}
+          className={`px-3 py-2 text-xs font-semibold tracking-widest uppercase transition ${
+            settings.enabled ? "bg-white text-black" : "text-muted hover:text-white"
+          }`}
+        >
+          Lights
+        </button>
+      </div>
 
       {open && (
         <div className="absolute right-0 mt-2 w-64 border border-neutral-700 bg-black/85 p-4 backdrop-blur">

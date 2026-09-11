@@ -26,7 +26,10 @@ const RADIUS = 450; // inside the camera's far=500 clip, comfortably past any st
 const vertexShader = /* glsl */ `
   varying vec2 vUv;
   void main() {
-    vUv = uv;
+    // Flips the horizontal read rather than the geometry itself, so BackSide
+    // (needed to view the sphere from inside) doesn't also have to fight a
+    // winding flip from a negatively-scaled geometry.
+    vUv = vec2(1.0 - uv.x, uv.y);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
 `;
@@ -42,6 +45,12 @@ const fragmentShader = /* glsl */ `
     vec3 day = texture2D(uDayMap, vUv).rgb;
     vec3 night = texture2D(uNightMap, vUv).rgb;
     gl_FragColor = vec4(mix(day, night, uMix) * uIntensity, 1.0);
+    // A hand-written ShaderMaterial's output isn't tonemapped/color-encoded
+    // automatically the way three's built-in materials are - without these,
+    // raw linear HDR radiance goes straight to the framebuffer and the image
+    // reads as a blown-out, featureless wash rather than the actual photo.
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
   }
 `;
 
@@ -67,13 +76,7 @@ export function HdriSky({
   const dayMap = useEquirect(dayUrl);
   const nightMap = useEquirect(nightUrl);
 
-  // Viewed from inside, so the sphere is flipped to read the texture the
-  // right way round rather than mirrored.
-  const geometry = useMemo(() => {
-    const g = new THREE.SphereGeometry(RADIUS, 64, 40);
-    g.scale(-1, 1, 1);
-    return g;
-  }, []);
+  const geometry = useMemo(() => new THREE.SphereGeometry(RADIUS, 64, 40), []);
 
   const material = useMemo(
     () =>
