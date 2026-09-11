@@ -1,6 +1,6 @@
 "use client";
 
-import { PointerLockControls, useProgress } from "@react-three/drei";
+import { Environment, PointerLockControls, useProgress } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import Link from "next/link";
 import { Suspense, useMemo, useRef, useState } from "react";
@@ -8,14 +8,17 @@ import { BEAMS_ENABLED } from "@/lib/features";
 import { Beams } from "./beams";
 import { DragLook } from "./drag-look";
 import { GyroLook } from "./gyro-look";
+import { HdriPanel } from "./hdri-panel";
 import { LightPanel } from "./light-panel";
 import { Movement } from "./movement";
 import { StageModel } from "./stage-model";
 import { TouchJoystick } from "./touch-joystick";
 import {
+  DEFAULT_HDRI_SETTINGS,
   DEFAULT_LIGHT_SETTINGS,
   EYE_HEIGHT,
   type Fixture,
+  type HdriSettings,
   type LightSettings,
   type Preset,
   type ViewMode,
@@ -55,14 +58,23 @@ export default function StageViewer({
   fixtures: allFixtures,
   backHref,
   name,
+  dayHdriUrl,
+  nightHdriUrl,
 }: {
   modelUrl: string;
   presets: Preset[];
   fixtures: Fixture[];
   backHref: string;
   name: string;
+  dayHdriUrl?: string;
+  nightHdriUrl?: string;
 }) {
   const [lights, setLights] = useState<LightSettings>(DEFAULT_LIGHT_SETTINGS);
+  const [hdri, setHdri] = useState<HdriSettings>(DEFAULT_HDRI_SETTINGS);
+  // Falls back to whichever slot is actually filled, so a version with only
+  // one HDRI uploaded doesn't need its variant re-selected to show anything.
+  const activeHdriUrl =
+    (hdri.variant === "day" ? dayHdriUrl : nightHdriUrl) ?? dayHdriUrl ?? nightHdriUrl;
   const fixtures = useMemo(() => (BEAMS_ENABLED ? allFixtures : []), [allFixtures]);
   const kindCounts = useMemo(() => {
     const counts = new Map<string, number>();
@@ -102,6 +114,16 @@ export default function StageViewer({
         <hemisphereLight args={[0xffffff, 0x333344, 1.1]} />
         <directionalLight position={[10, 20, 10]} intensity={1.4} />
         <ambientLight intensity={0.25} />
+        {hdri.enabled && activeHdriUrl && (
+          <Suspense fallback={null}>
+            <Environment
+              files={activeHdriUrl}
+              background
+              backgroundIntensity={hdri.intensity}
+              environmentIntensity={hdri.intensity}
+            />
+          </Suspense>
+        )}
         <Suspense fallback={null}>
           <StageModel url={modelUrl} />
         </Suspense>
@@ -138,6 +160,14 @@ export default function StageViewer({
           {name}
         </p>
         <div className="pointer-events-auto flex items-center gap-2">
+          {(dayHdriUrl || nightHdriUrl) && (
+            <HdriPanel
+              settings={hdri}
+              onChange={setHdri}
+              hasDay={Boolean(dayHdriUrl)}
+              hasNight={Boolean(nightHdriUrl)}
+            />
+          )}
           {fixtures.length > 0 && (
             <LightPanel
               settings={lights}

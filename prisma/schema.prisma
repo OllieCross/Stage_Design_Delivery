@@ -39,7 +39,15 @@ enum FileType {
   MODEL
   CSV
   MVR
+  HDRI
   OTHER
+}
+
+// Which slot an uploaded HDRI fills in the tour's day/night switch. Null for
+// every other FileType, and for an HDRI not currently assigned to either slot.
+enum HdriVariant {
+  DAY
+  NIGHT
 }
 
 model File {
@@ -54,6 +62,7 @@ model File {
   createdAt   DateTime       @default(now())
   presets     CameraPreset[]
   fixtures    Fixture[]
+  hdriVariant HdriVariant?
 }
 
 // Lighting fixture extracted from an uploaded MVR scene. Positions are stored

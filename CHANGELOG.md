@@ -4,6 +4,14 @@ All notable changes to White Production are documented here.
 
 ---
 
+## v0.1.18 - 2026-09-11
+
+### Added
+
+- **Day/night HDRI environment in the 3D tour**: admins can upload one or two HDRIs (`.hdr`/`.exr`) per version and assign each to a Day or Night slot; a new "Sky" panel in the tour lets a viewer switch between them, turn the environment off entirely, and adjust its intensity with a slider. Off by default, so a project with no HDRI uploaded looks exactly as before.
+
+---
+
 ## v0.1.17 - 2026-09-11
 
 ### Fixed

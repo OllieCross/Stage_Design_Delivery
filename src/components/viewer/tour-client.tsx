@@ -20,6 +20,8 @@ export function TourClient(props: {
   fixtures: Fixture[];
   backHref: string;
   name: string;
+  dayHdriUrl?: string;
+  nightHdriUrl?: string;
 }) {
   return <StageViewer {...props} />;
 }

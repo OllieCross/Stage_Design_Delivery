@@ -191,6 +191,43 @@ export async function deleteFile(formData: FormData) {
   revalidatePath(`/admin/projects/${file.version.projectId}`);
 }
 
+// --- HDRI environments ---
+
+/** Assigns (or clears) an uploaded HDRI's day/night slot for its version. */
+export async function setHdriVariant(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  const raw = String(formData.get("variant") ?? "");
+  const variant = raw === "DAY" || raw === "NIGHT" ? raw : null;
+
+  const file = await db.file.findUnique({
+    where: { id },
+    select: { type: true, versionId: true, version: { select: { projectId: true } } },
+  });
+  if (!file || file.type !== "HDRI") return;
+
+  await db.$transaction([
+    // Only one HDRI holds a given slot at a time, so assigning it here
+    // vacates it from whichever file held it before.
+    ...(variant
+      ? [
+          db.file.updateMany({
+            where: {
+              versionId: file.versionId,
+              type: "HDRI",
+              hdriVariant: variant,
+              id: { not: id },
+            },
+            data: { hdriVariant: null },
+          }),
+        ]
+      : []),
+    db.file.update({ where: { id }, data: { hdriVariant: variant } }),
+  ]);
+
+  revalidatePath(`/admin/projects/${file.version.projectId}`);
+}
+
 // --- Camera presets ---
 
 export async function createPreset(formData: FormData) {

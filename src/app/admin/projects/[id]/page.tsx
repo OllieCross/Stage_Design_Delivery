@@ -5,6 +5,7 @@ import {
   TrashProjectButton,
   DeleteVersionButton,
 } from "@/components/admin/danger-buttons";
+import { HdriVariantSelect } from "@/components/admin/hdri-variant-select";
 import { PresetEditor } from "@/components/admin/preset-editor";
 import { ProjectSettings } from "@/components/admin/project-settings";
 import { UploadZone } from "@/components/admin/upload-zone";
@@ -122,6 +123,42 @@ export default async function AdminProjectPage(props: { params: Promise<{ id: st
               </div>
             );
           })}
+
+          {(() => {
+            const hdriFiles = version.files.filter((f) => f.type === "HDRI");
+            if (hdriFiles.length === 0) return null;
+            return (
+              <div className="mt-6">
+                <h3 className="text-muted text-xs font-bold tracking-widest uppercase">
+                  {FILE_TYPE_LABELS.HDRI}
+                </h3>
+                <ul className="mt-2 divide-y divide-neutral-800 border-y border-neutral-800">
+                  {hdriFiles.map((file) => (
+                    <li key={file.id} className="flex items-center justify-between gap-4 px-2 py-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{file.name}</p>
+                        <p className="text-muted text-xs">{formatBytes(file.size)}</p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-4">
+                        <HdriVariantSelect file={{ id: file.id, hdriVariant: file.hdriVariant }} />
+                        <a
+                          href={`/api/files/${file.id}/download`}
+                          className="text-muted text-xs tracking-wide uppercase hover:text-white"
+                        >
+                          Download
+                        </a>
+                        <DeleteFileButton fileId={file.id} name={file.name} />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-muted mt-2 text-xs">
+                  Set one HDRI as Day and one as Night to drive the tour&apos;s sky switch; extras
+                  stay uploaded but unused.
+                </p>
+              </div>
+            );
+          })()}
         </section>
       ))}
     </main>

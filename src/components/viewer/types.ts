@@ -42,3 +42,20 @@ export const DEFAULT_LIGHT_SETTINGS: LightSettings = {
   angleScale: 1,
   lengthScale: 1,
 };
+
+/**
+ * Day/night sky, driven by a pair of admin-uploaded HDRIs per version (see
+ * File.hdriVariant). Off by default so a project with no HDRI uploaded looks
+ * exactly as it did before this existed.
+ */
+export type HdriSettings = {
+  enabled: boolean;
+  variant: "day" | "night";
+  intensity: number;
+};
+
+export const DEFAULT_HDRI_SETTINGS: HdriSettings = {
+  enabled: false,
+  variant: "day",
+  intensity: 1,
+};
