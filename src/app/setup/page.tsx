@@ -54,12 +54,12 @@ function SetupForm() {
           value={token}
           onChange={(e) => setToken(e.target.value)}
           placeholder="Setup token"
-          className="mt-8 w-full rounded-md border border-neutral-700 bg-transparent px-4 py-3 text-sm outline-none focus:border-neutral-400"
+          className="mt-8 w-full rounded-md border border-neutral-700 bg-transparent px-4 py-3 text-sm outline-none focus:border-neutral-400 focus:ring-2 focus:ring-white/30"
         />
         <button
           onClick={register}
           disabled={busy || !token}
-          className="mt-4 w-full rounded-md bg-white px-4 py-3 text-sm font-semibold tracking-wide text-black uppercase transition hover:bg-neutral-200 disabled:opacity-50"
+          className="bg-accent text-accent-foreground mt-4 w-full rounded-md px-4 py-3 text-sm font-semibold tracking-wide uppercase transition hover:brightness-110 disabled:opacity-50"
         >
           {busy ? "Waiting for passkey..." : "Register passkey"}
         </button>

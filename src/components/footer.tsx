@@ -71,7 +71,7 @@ export function Footer() {
       <div className="text-muted mx-auto flex max-w-3xl items-center justify-between text-xs">
         <div className="flex items-center gap-2.5">
           <span>Made by olliecross &copy; 2026</span>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-0.5">
             {SOCIAL_LINKS.map(({ label, href, icon }) => (
               <a
                 key={label}
@@ -79,7 +79,7 @@ export function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={label}
-                className="text-muted hover:text-foreground transition-colors"
+                className="text-muted hover:text-foreground p-2 transition-colors"
               >
                 {icon}
               </a>

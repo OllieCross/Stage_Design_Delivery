@@ -14,7 +14,7 @@ type Preset = {
 };
 
 const inputClass =
-  "w-20 rounded-md border border-neutral-700 bg-transparent px-2 py-1 text-xs outline-none focus:border-neutral-400";
+  "w-20 rounded-md border border-neutral-700 bg-transparent px-2 py-1 text-xs outline-none focus:border-neutral-400 focus:ring-2 focus:ring-white/30";
 
 export function PresetEditor({ file, presets }: { file: { id: string }; presets: Preset[] }) {
   const [open, setOpen] = useState(false);
@@ -66,7 +66,7 @@ export function PresetEditor({ file, presets }: { file: { id: string }; presets:
                 />
               </label>
             ))}
-            <button className="rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-black uppercase transition hover:bg-neutral-200">
+            <button className="bg-accent text-accent-foreground rounded-md px-3 py-1.5 text-xs font-semibold uppercase transition hover:brightness-110">
               Add
             </button>
           </form>

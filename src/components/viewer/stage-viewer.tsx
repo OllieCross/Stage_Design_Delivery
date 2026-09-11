@@ -201,7 +201,7 @@ export default function StageViewer({
             <div className="overflow-hidden border border-neutral-700 bg-black/60 backdrop-blur">
               <button
                 onClick={toggleGyro}
-                className={`px-3 py-2 text-xs font-semibold tracking-widest uppercase transition ${
+                className={`flex min-h-11 items-center px-3 text-xs font-semibold tracking-widest uppercase transition ${
                   gyro ? "bg-white text-black" : "text-muted hover:text-white"
                 }`}
               >
@@ -214,7 +214,7 @@ export default function StageViewer({
               <button
                 key={m}
                 onClick={() => setMode(m)}
-                className={`px-3 py-2 text-xs font-semibold tracking-widest uppercase transition ${
+                className={`flex min-h-11 items-center px-3 text-xs font-semibold tracking-widest uppercase transition ${
                   mode === m ? "bg-white text-black" : "text-muted hover:text-white"
                 }`}
               >
@@ -233,7 +233,7 @@ export default function StageViewer({
               <button
                 key={p.id}
                 onClick={() => goToPreset(p)}
-                className="text-muted border border-neutral-700 bg-black/60 px-3 py-1.5 text-xs tracking-widest uppercase backdrop-blur transition hover:border-white hover:text-white"
+                className="text-muted flex min-h-11 items-center border border-neutral-700 bg-black/60 px-3 text-xs tracking-widest uppercase backdrop-blur transition hover:border-white hover:text-white"
               >
                 {p.name}
               </button>

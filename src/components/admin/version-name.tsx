@@ -27,7 +27,7 @@ export function VersionName({ version }: { version: { id: string; label: string 
         autoFocus
         required
         onKeyDown={(e) => e.key === "Escape" && setEditing(false)}
-        className="w-32 border border-neutral-700 bg-transparent px-2 py-1 text-sm uppercase outline-none focus:border-neutral-400"
+        className="w-32 border border-neutral-700 bg-transparent px-2 py-1 text-sm uppercase outline-none focus:border-neutral-400 focus:ring-2 focus:ring-white/30"
       />
       <button className="text-xs tracking-widest uppercase underline-offset-4 hover:underline">
         Save

@@ -4,6 +4,14 @@ All notable changes to White Production are documented here.
 
 ---
 
+## v0.1.21 - 2026-09-11
+
+### Changed
+
+- **UX/UI pass**: a single accent color (`--accent`, amber) now marks the one primary action per form (Create, New version, Save settings, Add preset, Register passkey, Open 3D tour) and the Hidden status flag, giving them visual weight the previous all-monochrome palette didn't. Every text input's focus state - previously just a 1px border-color shift, effectively invisible for keyboard navigation - now also gets a visible focus ring. Small tap targets (footer social icons, version-switcher tabs, the 3D tour's Sky/Lights/Gyro/Bird/Person controls and camera-preset chips) are sized closer to the 44px touch guideline. `prefers-reduced-motion` is now respected globally. The signed-out home page is now centered (title, subtitle, Login button) rather than split into a header bar.
+
+---
+
 ## v0.1.20 - 2026-09-11
 
 ### Changed

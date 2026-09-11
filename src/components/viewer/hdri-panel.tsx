@@ -25,7 +25,7 @@ export function HdriPanel({
       <div className="overflow-hidden border border-neutral-700 bg-black/60 backdrop-blur">
         <button
           onClick={() => setOpen(!open)}
-          className={`px-3 py-2 text-xs font-semibold tracking-widest uppercase transition ${
+          className={`flex min-h-11 items-center px-3 text-xs font-semibold tracking-widest uppercase transition ${
             settings.enabled ? "bg-white text-black" : "text-muted hover:text-white"
           }`}
         >

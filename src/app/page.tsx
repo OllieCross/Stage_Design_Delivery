@@ -23,14 +23,12 @@ export default async function Home(props: { searchParams: Promise<{ sort?: strin
   // is just no longer how someone finds one.
   if (!admin) {
     return (
-      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-12">
-        <header className="flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight uppercase">White Production</h1>
-            <p className="text-muted mt-1 text-sm tracking-widest uppercase">Stage design</p>
-          </div>
+      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-6 py-12 text-center">
+        <h1 className="text-3xl font-bold tracking-tight uppercase">White Production</h1>
+        <p className="text-muted mt-1 text-sm tracking-widest uppercase">Stage design</p>
+        <div className="mt-8">
           <PasskeyLogin />
-        </header>
+        </div>
       </main>
     );
   }
@@ -76,7 +74,7 @@ export default async function Home(props: { searchParams: Promise<{ sort?: strin
                 key={key}
                 href={key === "added" ? "/" : `/?sort=${key}`}
                 scroll={false}
-                className={`border px-2.5 py-1 text-[10px] tracking-widest uppercase transition ${
+                className={`border px-2.5 py-2 text-[10px] tracking-widest uppercase transition ${
                   sort === key
                     ? "border-white text-white"
                     : "text-muted border-neutral-800 hover:border-neutral-500 hover:text-white"
@@ -100,7 +98,7 @@ export default async function Home(props: { searchParams: Promise<{ sort?: strin
                     {p.name}
                   </span>
                   {p.hidden && (
-                    <span className="text-muted ml-3 border border-neutral-700 px-1.5 py-0.5 text-[10px] tracking-widest uppercase">
+                    <span className="border-accent/40 bg-accent/10 text-accent ml-3 border px-1.5 py-0.5 text-[10px] tracking-widest uppercase">
                       Hidden
                     </span>
                   )}

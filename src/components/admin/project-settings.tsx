@@ -4,7 +4,7 @@ import { useState } from "react";
 import { updateProject } from "@/server/actions";
 
 const fieldClass =
-  "w-full border border-neutral-700 bg-transparent px-3 py-2 text-sm outline-none focus:border-neutral-400";
+  "w-full border border-neutral-700 bg-transparent px-3 py-2 text-sm outline-none focus:border-neutral-400 focus:ring-2 focus:ring-white/30";
 const labelClass = "text-muted block text-xs tracking-widest uppercase";
 
 export function ProjectSettings({
@@ -85,7 +85,7 @@ export function ProjectSettings({
         </span>
       </label>
 
-      <button className="mt-5 bg-white px-4 py-2 text-xs font-semibold tracking-widest text-black uppercase transition hover:bg-neutral-200">
+      <button className="bg-accent text-accent-foreground mt-5 px-4 py-2 text-xs font-semibold tracking-widest uppercase transition hover:brightness-110">
         Save settings
       </button>
     </form>
