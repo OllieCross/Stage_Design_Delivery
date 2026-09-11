@@ -35,7 +35,10 @@ export default async function AdminProjectPage(props: { params: Promise<{ id: st
     <main className="mx-auto max-w-4xl">
       <div className="flex items-center justify-between">
         <div>
-          <Link href="/" className="text-muted text-xs tracking-wide uppercase hover:text-white">
+          <Link
+            href="/admin"
+            className="text-muted text-xs tracking-wide uppercase hover:text-white"
+          >
             Projects
           </Link>
           <h1 className="mt-1 text-xl font-bold tracking-tight uppercase">{project.name}</h1>
