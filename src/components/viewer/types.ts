@@ -44,18 +44,22 @@ export const DEFAULT_LIGHT_SETTINGS: LightSettings = {
 };
 
 /**
- * Day/night sky, driven by a pair of admin-uploaded HDRIs per version (see
- * File.hdriVariant). Off by default so a project with no HDRI uploaded looks
- * exactly as it did before this existed.
+ * Day/night sky, driven by the shared Day/Night HDRI pair (see HdriAsset -
+ * global, not per-project). `mix` is a continuous 0 (day) to 1 (night)
+ * crossfade rather than a hard switch: the visible sky blends smoothly
+ * (hdri-sky.tsx's shader), while lighting/reflections snap to whichever side
+ * is nearer, since blending two environment maps for IBL isn't cheap and the
+ * effect is subtle on stage-truss materials anyway. Off by default so a
+ * server with no HDRI uploaded looks exactly as it did before this existed.
  */
 export type HdriSettings = {
   enabled: boolean;
-  variant: "day" | "night";
+  mix: number;
   intensity: number;
 };
 
 export const DEFAULT_HDRI_SETTINGS: HdriSettings = {
   enabled: false,
-  variant: "day",
+  mix: 0,
   intensity: 1,
 };

@@ -44,19 +44,21 @@ export function HdriPanel({
           </div>
 
           {hasDay && hasNight && (
-            <div className="mt-4 flex overflow-hidden border border-neutral-700">
-              {(["day", "night"] as const).map((v) => (
-                <button
-                  key={v}
-                  onClick={() => set("variant", v)}
-                  className={`flex-1 py-1.5 text-xs font-semibold tracking-widest uppercase transition ${
-                    settings.variant === v ? "bg-white text-black" : "text-muted hover:text-white"
-                  }`}
-                >
-                  {v}
-                </button>
-              ))}
-            </div>
+            <label className="text-muted mt-4 block text-xs tracking-widest uppercase">
+              <span className="flex justify-between">
+                <span>Day</span>
+                <span>Night</span>
+              </span>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.01}
+                value={settings.mix}
+                onChange={(e) => set("mix", Number(e.target.value))}
+                className="w-full accent-white"
+              />
+            </label>
           )}
 
           <label className="text-muted mt-4 block text-xs tracking-widest uppercase">

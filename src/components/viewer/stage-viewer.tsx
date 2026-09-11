@@ -9,6 +9,7 @@ import { Beams } from "./beams";
 import { DragLook } from "./drag-look";
 import { GyroLook } from "./gyro-look";
 import { HdriPanel } from "./hdri-panel";
+import { HdriSky } from "./hdri-sky";
 import { LightPanel } from "./light-panel";
 import { Movement } from "./movement";
 import { StageModel } from "./stage-model";
@@ -71,10 +72,16 @@ export default function StageViewer({
 }) {
   const [lights, setLights] = useState<LightSettings>(DEFAULT_LIGHT_SETTINGS);
   const [hdri, setHdri] = useState<HdriSettings>(DEFAULT_HDRI_SETTINGS);
-  // Falls back to whichever slot is actually filled, so a version with only
-  // one HDRI uploaded doesn't need its variant re-selected to show anything.
-  const activeHdriUrl =
-    (hdri.variant === "day" ? dayHdriUrl : nightHdriUrl) ?? dayHdriUrl ?? nightHdriUrl;
+  const hasDay = Boolean(dayHdriUrl);
+  const hasNight = Boolean(nightHdriUrl);
+  // With only one side uploaded there's nothing to crossfade - the mix
+  // slider stays hidden (see HdriPanel) and that one side is used outright.
+  const nearestHdriUrl =
+    hasDay && hasNight
+      ? hdri.mix < 0.5
+        ? dayHdriUrl
+        : nightHdriUrl
+      : (dayHdriUrl ?? nightHdriUrl);
   const fixtures = useMemo(() => (BEAMS_ENABLED ? allFixtures : []), [allFixtures]);
   const kindCounts = useMemo(() => {
     const counts = new Map<string, number>();
@@ -114,10 +121,29 @@ export default function StageViewer({
         <hemisphereLight args={[0xffffff, 0x333344, 1.1]} />
         <directionalLight position={[10, 20, 10]} intensity={1.4} />
         <ambientLight intensity={0.25} />
-        {hdri.enabled && activeHdriUrl && (
+        {hdri.enabled && hasDay && hasNight && dayHdriUrl && nightHdriUrl && (
+          <Suspense fallback={null}>
+            {/* Visible sky: crossfades smoothly between the two HDRIs. */}
+            <HdriSky
+              dayUrl={dayHdriUrl}
+              nightUrl={nightHdriUrl}
+              mix={hdri.mix}
+              intensity={hdri.intensity}
+            />
+            {/* Lighting/reflections: snap to the nearer side rather than
+                blending two environment maps, which isn't cheap and would
+                barely show on this scene's materials anyway. */}
+            <Environment
+              files={nearestHdriUrl}
+              background={false}
+              environmentIntensity={hdri.intensity}
+            />
+          </Suspense>
+        )}
+        {hdri.enabled && !(hasDay && hasNight) && nearestHdriUrl && (
           <Suspense fallback={null}>
             <Environment
-              files={activeHdriUrl}
+              files={nearestHdriUrl}
               background
               backgroundIntensity={hdri.intensity}
               environmentIntensity={hdri.intensity}
@@ -160,13 +186,8 @@ export default function StageViewer({
           {name}
         </p>
         <div className="pointer-events-auto flex items-center gap-2">
-          {(dayHdriUrl || nightHdriUrl) && (
-            <HdriPanel
-              settings={hdri}
-              onChange={setHdri}
-              hasDay={Boolean(dayHdriUrl)}
-              hasNight={Boolean(nightHdriUrl)}
-            />
+          {(hasDay || hasNight) && (
+            <HdriPanel settings={hdri} onChange={setHdri} hasDay={hasDay} hasNight={hasNight} />
           )}
           {fixtures.length > 0 && (
             <LightPanel

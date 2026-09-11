@@ -45,18 +45,15 @@ export default async function TourPage(props: {
     },
   });
 
-  // Day/night sky, from whichever HDRIs (if any) the admin assigned to each
-  // slot for this version.
-  const hdris = await db.file.findMany({
-    where: { versionId: file.versionId, type: "HDRI", hdriVariant: { not: null } },
-    select: { id: true, name: true, hdriVariant: true },
-  });
-  const dayHdri = hdris.find((h) => h.hdriVariant === "DAY");
-  const nightHdri = hdris.find((h) => h.hdriVariant === "NIGHT");
+  // Day/night sky: one shared pair for every project, not scoped to this
+  // version (see HdriAsset).
+  const hdris = await db.hdriAsset.findMany();
+  const dayHdri = hdris.find((h) => h.variant === "DAY");
+  const nightHdri = hdris.find((h) => h.variant === "NIGHT");
   // The extension in the URL (not the actual filename) is what tells drei's
-  // loader RGBE from EXR - see the [filename] route.
-  const hdriUrl = (h: { id: string; name: string }) =>
-    `/api/files/${h.id}/raw/env.${hdriUrlExtension(h.name)}`;
+  // loader RGBE from EXR - see /api/hdri/[variant]/[filename].
+  const hdriUrl = (variant: "DAY" | "NIGHT", h: { name: string }) =>
+    `/api/hdri/${variant.toLowerCase()}/env.${hdriUrlExtension(h.name)}`;
 
   return (
     <TourClient
@@ -65,8 +62,8 @@ export default async function TourPage(props: {
       fixtures={fixtures}
       backHref={`/projects/${slug}`}
       name={file.name}
-      dayHdriUrl={dayHdri && hdriUrl(dayHdri)}
-      nightHdriUrl={nightHdri && hdriUrl(nightHdri)}
+      dayHdriUrl={dayHdri && hdriUrl("DAY", dayHdri)}
+      nightHdriUrl={nightHdri && hdriUrl("NIGHT", nightHdri)}
     />
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HdriAdmin } from "@/components/admin/hdri-admin";
 import { formatDate } from "@/lib/dates";
 import { db } from "@/lib/db";
 import { formatGigabytes } from "@/lib/files";
@@ -8,7 +9,7 @@ import { totalStorageBytes } from "@/server/storage";
 export const dynamic = "force-dynamic";
 
 export default async function AdminHome() {
-  const [projects, trashed, storageBytes] = await Promise.all([
+  const [projects, trashed, storageBytes, hdris] = await Promise.all([
     db.project.findMany({
       where: { deletedAt: null },
       orderBy: { createdAt: "desc" },
@@ -16,7 +17,10 @@ export default async function AdminHome() {
     }),
     db.project.findMany({ where: { deletedAt: { not: null } }, orderBy: { deletedAt: "desc" } }),
     totalStorageBytes(),
+    db.hdriAsset.findMany(),
   ]);
+  const dayHdri = hdris.find((h) => h.variant === "DAY") ?? null;
+  const nightHdri = hdris.find((h) => h.variant === "NIGHT") ?? null;
 
   return (
     <main className="mx-auto max-w-3xl">
@@ -96,6 +100,8 @@ export default async function AdminHome() {
           </ul>
         </section>
       )}
+
+      <HdriAdmin day={dayHdri} night={nightHdri} />
     </main>
   );
 }

@@ -191,41 +191,17 @@ export async function deleteFile(formData: FormData) {
   revalidatePath(`/admin/projects/${file.version.projectId}`);
 }
 
-// --- HDRI environments ---
+// --- HDRI environment (global) ---
 
-/** Assigns (or clears) an uploaded HDRI's day/night slot for its version. */
-export async function setHdriVariant(formData: FormData) {
+export async function deleteHdriAsset(formData: FormData) {
   await requireAdmin();
-  const id = String(formData.get("id"));
-  const raw = String(formData.get("variant") ?? "");
-  const variant = raw === "DAY" || raw === "NIGHT" ? raw : null;
-
-  const file = await db.file.findUnique({
-    where: { id },
-    select: { type: true, versionId: true, version: { select: { projectId: true } } },
-  });
-  if (!file || file.type !== "HDRI") return;
-
-  await db.$transaction([
-    // Only one HDRI holds a given slot at a time, so assigning it here
-    // vacates it from whichever file held it before.
-    ...(variant
-      ? [
-          db.file.updateMany({
-            where: {
-              versionId: file.versionId,
-              type: "HDRI",
-              hdriVariant: variant,
-              id: { not: id },
-            },
-            data: { hdriVariant: null },
-          }),
-        ]
-      : []),
-    db.file.update({ where: { id }, data: { hdriVariant: variant } }),
-  ]);
-
-  revalidatePath(`/admin/projects/${file.version.projectId}`);
+  const variant = String(formData.get("variant") ?? "");
+  if (variant !== "DAY" && variant !== "NIGHT") return;
+  const asset = await db.hdriAsset.findUnique({ where: { variant } });
+  if (!asset) return;
+  await deleteObject(asset.s3Key);
+  await db.hdriAsset.delete({ where: { variant } });
+  revalidatePath("/admin");
 }
 
 // --- Camera presets ---

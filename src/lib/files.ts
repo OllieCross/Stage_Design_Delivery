@@ -16,9 +16,6 @@ const EXTENSION_TYPES: Record<string, FileType> = {
   gltf: "MODEL",
   csv: "CSV",
   mvr: "MVR",
-  hdr: "HDRI",
-  hdri: "HDRI",
-  exr: "HDRI",
 };
 
 export function detectFileType(filename: string): FileType {
@@ -57,17 +54,24 @@ const MAGIC_CHECKS: Partial<Record<FileType, (bytes: Buffer, ext: string) => boo
   MVR: (b) =>
     b.subarray(0, 4).equals(Buffer.from([0x50, 0x4b, 0x03, 0x04])) ||
     b.subarray(0, 4).equals(Buffer.from([0x50, 0x4b, 0x05, 0x06])),
-  // Radiance HDR ("#?RADIANCE" / "#?RGBE") or OpenEXR (magic 76 2f 31 01).
-  HDRI: (b, ext) => {
-    if (ext === "exr") return b.subarray(0, 4).equals(Buffer.from([0x76, 0x2f, 0x31, 0x01]));
-    return /^#\?(RADIANCE|RGBE)/.test(b.subarray(0, 11).toString("latin1"));
-  },
 };
 
 export function verifyMagicBytes(type: FileType, filename: string, bytes: Buffer): boolean {
   const ext = filename.split(".").pop()?.toLowerCase() ?? "";
   const check = MAGIC_CHECKS[type];
   return check ? check(bytes, ext) : true;
+}
+
+/**
+ * HDRI is global (HdriAsset), not a per-version FileType, so it gets its own
+ * signature check rather than a MAGIC_CHECKS entry: Radiance HDR
+ * ("#?RADIANCE" / "#?RGBE") or OpenEXR (magic 76 2f 31 01).
+ */
+export function verifyHdriMagicBytes(filename: string, bytes: Buffer): boolean {
+  if (hdriUrlExtension(filename) === "exr") {
+    return bytes.subarray(0, 4).equals(Buffer.from([0x76, 0x2f, 0x31, 0x01]));
+  }
+  return /^#\?(RADIANCE|RGBE)/.test(bytes.subarray(0, 11).toString("latin1"));
 }
 
 /** drei's HDRI loader only recognizes "hdr" or "exr"; ".hdri" is Radiance too. */
@@ -81,10 +85,6 @@ export const FILE_TYPE_LABELS: Record<FileType, string> = {
   IMAGE: "Images",
   CSV: "Tables",
   MVR: "Lighting Scenes",
-  // Not in FILE_TYPE_ORDER: HDRIs are a tour environment asset, not a
-  // deliverable, so they get their own admin section instead of a generic
-  // download group.
-  HDRI: "Environment (HDRI)",
   OTHER: "Other",
 };
 

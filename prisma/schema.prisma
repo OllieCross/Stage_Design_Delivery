@@ -39,15 +39,7 @@ enum FileType {
   MODEL
   CSV
   MVR
-  HDRI
   OTHER
-}
-
-// Which slot an uploaded HDRI fills in the tour's day/night switch. Null for
-// every other FileType, and for an HDRI not currently assigned to either slot.
-enum HdriVariant {
-  DAY
-  NIGHT
 }
 
 model File {
@@ -62,7 +54,24 @@ model File {
   createdAt   DateTime       @default(now())
   presets     CameraPreset[]
   fixtures    Fixture[]
-  hdriVariant HdriVariant?
+}
+
+// Day/night slot in the shared HDRI pair used by every project's 3D tour.
+enum HdriVariant {
+  DAY
+  NIGHT
+}
+
+// One row per slot: uploading again for a variant overwrites it, so every
+// project's tour always sees the current pair. Global by design - unlike
+// File, not scoped to a Version.
+model HdriAsset {
+  variant     HdriVariant @id
+  name        String
+  s3Key       String
+  size        Int
+  contentType String
+  createdAt   DateTime    @default(now())
 }
 
 // Lighting fixture extracted from an uploaded MVR scene. Positions are stored

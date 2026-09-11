@@ -4,6 +4,15 @@ All notable changes to White Production are documented here.
 
 ---
 
+## v0.1.19 - 2026-09-11
+
+### Changed
+
+- **HDRI environment is now global, not per-project**: reworked v0.1.18's per-version upload into a single shared Day/Night HDRI pair, managed once from the admin dashboard and used by every project's tour. Uploading replaces a slot in place (`env/day.*` / `env/night.*` in MinIO); the per-version admin section, its upload endpoint, and its extension-in-URL file route are gone in favor of a dedicated `/api/admin/upload-hdri` and public `/api/hdri/[variant]/[filename]`.
+- **Sky panel now crossfades instead of switching**: the Day/Night toggle is a slider (0 = day, 1 = night). The visible sky blends the two HDRIs continuously in a single custom shader pass (`hdri-sky.tsx`); lighting/reflections snap to whichever side is nearer rather than blending two environment maps, which would need regenerating on every slider tick for a difference too subtle to matter on this scene's materials.
+
+---
+
 ## v0.1.18 - 2026-09-11
 
 ### Added
