@@ -44,7 +44,7 @@ export default async function AdminHome() {
           pattern="[a-z0-9-]*"
           className="flex-1 rounded-md border border-neutral-700 bg-transparent px-3 py-2 text-sm outline-none focus:border-neutral-400 focus:ring-2 focus:ring-white/30"
         />
-        <button className="bg-accent text-accent-foreground rounded-md px-4 py-2 text-sm font-semibold uppercase transition hover:brightness-110">
+        <button className="rounded-md bg-white px-4 py-2 text-sm font-semibold text-black uppercase transition hover:bg-neutral-200">
           Create
         </button>
       </form>
@@ -60,7 +60,7 @@ export default async function AdminHome() {
                 <span className="font-semibold">{p.name}</span>
                 <span className="text-muted ml-3 text-sm">/{p.slug}</span>
                 {p.hidden && (
-                  <span className="border-accent/40 bg-accent/10 text-accent ml-3 border px-1.5 py-0.5 text-[10px] tracking-widest uppercase">
+                  <span className="text-muted ml-3 border border-neutral-700 px-1.5 py-0.5 text-[10px] tracking-widest uppercase">
                     Hidden
                   </span>
                 )}

@@ -55,7 +55,7 @@ export default async function ProjectPage(props: {
         <h1 className="mt-2 text-3xl font-bold tracking-tight uppercase">{project.name}</h1>
         <p className="text-muted mt-1 text-xs tracking-widest uppercase">
           {formatDate(project.eventDate)}
-          {project.hidden && <span className="text-accent"> · Hidden</span>}
+          {project.hidden && " · Hidden"}
         </p>
 
         <nav className="mt-6 flex flex-wrap gap-2" aria-label="Versions">
@@ -88,7 +88,7 @@ export default async function ProjectPage(props: {
                 <div className="mt-4 flex gap-3">
                   <Link
                     href={`/projects/${project.slug}/tour/${f.id}`}
-                    className="bg-accent text-accent-foreground px-4 py-2 text-xs font-bold tracking-widest uppercase transition hover:brightness-110"
+                    className="bg-white px-4 py-2 text-xs font-bold tracking-widest text-black uppercase transition hover:bg-neutral-200"
                   >
                     Open 3D tour
                   </Link>

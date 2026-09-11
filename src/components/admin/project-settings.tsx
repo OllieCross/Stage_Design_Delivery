@@ -85,7 +85,7 @@ export function ProjectSettings({
         </span>
       </label>
 
-      <button className="bg-accent text-accent-foreground mt-5 px-4 py-2 text-xs font-semibold tracking-widest uppercase transition hover:brightness-110">
+      <button className="mt-5 bg-white px-4 py-2 text-xs font-semibold tracking-widest text-black uppercase transition hover:bg-neutral-200">
         Save settings
       </button>
     </form>

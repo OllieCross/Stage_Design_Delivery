@@ -66,7 +66,7 @@ export function PresetEditor({ file, presets }: { file: { id: string }; presets:
                 />
               </label>
             ))}
-            <button className="bg-accent text-accent-foreground rounded-md px-3 py-1.5 text-xs font-semibold uppercase transition hover:brightness-110">
+            <button className="rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-black uppercase transition hover:bg-neutral-200">
               Add
             </button>
           </form>

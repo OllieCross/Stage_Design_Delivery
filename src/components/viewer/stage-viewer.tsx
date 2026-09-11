@@ -112,7 +112,12 @@ export default function StageViewer({
   }
 
   return (
-    <div className="relative h-dvh w-full overflow-hidden bg-black">
+    // fixed, not relative+h-dvh: pins this to the viewport regardless of
+    // document flow, so the site footer sitting after it in the DOM (mt-auto
+    // in a min-h-full body) can never peek in on mobile - positioned elements
+    // always paint above static ones, and fixed can't be scrolled to reveal
+    // what's behind it.
+    <div className="fixed inset-0 overflow-hidden bg-black">
       <Canvas
         dpr={isTouch ? [1, 1.5] : [1, 1.75]}
         camera={{ fov: 70, near: 0.1, far: 500, position: [0, EYE_HEIGHT, 8] }}
@@ -172,12 +177,13 @@ export default function StageViewer({
       {/* Look-control target covering the canvas (pointer lock on desktop, drag on touch) */}
       <div id={LOCK_TARGET_ID} className="absolute inset-0 touch-none" aria-hidden />
 
-      {/* Top bar */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-2 p-4">
+      {/* Top bar - pt uses the safe-area inset so it clears the notch/status
+          bar when installed as a standalone PWA, same as the footer's pb. */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-2 p-4 pt-[max(1rem,env(safe-area-inset-top))]">
         <div className="pointer-events-auto">
           <Link
             href={backHref}
-            className="text-muted bg-black/60 px-3 py-2 text-xs tracking-widest uppercase backdrop-blur transition hover:text-white"
+            className="text-muted flex min-h-11 items-center bg-black/60 px-3 text-xs tracking-widest uppercase backdrop-blur transition hover:text-white"
           >
             Back
           </Link>
@@ -226,7 +232,7 @@ export default function StageViewer({
       </div>
 
       {/* Bottom bar: presets + hints, joystick on touch */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col gap-3 p-4">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col gap-3 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
         {presets.length > 0 && (
           <div className="pointer-events-auto flex flex-wrap justify-center gap-2">
             {presets.map((p) => (

@@ -59,7 +59,7 @@ function SetupForm() {
         <button
           onClick={register}
           disabled={busy || !token}
-          className="bg-accent text-accent-foreground mt-4 w-full rounded-md px-4 py-3 text-sm font-semibold tracking-wide uppercase transition hover:brightness-110 disabled:opacity-50"
+          className="mt-4 w-full rounded-md bg-white px-4 py-3 text-sm font-semibold tracking-wide text-black uppercase transition hover:bg-neutral-200 disabled:opacity-50"
         >
           {busy ? "Waiting for passkey..." : "Register passkey"}
         </button>

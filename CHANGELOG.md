@@ -4,6 +4,15 @@ All notable changes to White Production are documented here.
 
 ---
 
+## v0.1.22 - 2026-09-11
+
+### Fixed
+
+- **Accent color removed**: reverted the previous release's amber accent - every primary button and the Hidden flag are back to the plain white/monochrome styling.
+- **3D tour on mobile**: the site footer could bleed into the bottom of the tour view (the viewer's container was a normal-flow `h-dvh` box, so on some mobile browsers the document ended up taller than one viewport and the footer after it in the DOM peeked into frame). It's now pinned with `fixed inset-0`, which can't be scrolled past. The top control bar also gets real safe-area padding so it clears the notch/status bar, and the Back button matches the height of the Sky/Gyro/Bird/Person controls next to it instead of rendering shorter.
+
+---
+
 ## v0.1.21 - 2026-09-11
 
 ### Changed

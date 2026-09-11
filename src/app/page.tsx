@@ -98,7 +98,7 @@ export default async function Home(props: { searchParams: Promise<{ sort?: strin
                     {p.name}
                   </span>
                   {p.hidden && (
-                    <span className="border-accent/40 bg-accent/10 text-accent ml-3 border px-1.5 py-0.5 text-[10px] tracking-widest uppercase">
+                    <span className="text-muted ml-3 border border-neutral-700 px-1.5 py-0.5 text-[10px] tracking-widest uppercase">
                       Hidden
                     </span>
                   )}
