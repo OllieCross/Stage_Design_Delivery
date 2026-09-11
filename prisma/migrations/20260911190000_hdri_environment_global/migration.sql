@@ -4,6 +4,13 @@
 -- AlterTable
 ALTER TABLE "File" DROP COLUMN "hdriVariant";
 
+-- A File actually uploaded as type 'HDRI' (via the per-version feature this
+-- migration retires) can't survive the enum shrink below - downgrade it to
+-- OTHER first. The file itself, its S3 object and every other column are
+-- untouched; only the HDRI tag is dropped, same as the type this feature
+-- never had.
+UPDATE "File" SET "type" = 'OTHER' WHERE "type" = 'HDRI';
+
 -- Shrink FileType: drop the now-unused HDRI value (Postgres has no DROP
 -- VALUE for enums, so the type is recreated and the column re-cast).
 ALTER TYPE "FileType" RENAME TO "FileType_old";
