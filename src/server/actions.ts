@@ -35,8 +35,8 @@ export async function createProject(formData: FormData) {
     data: { name, slug, versions: { create: { label: "v1" } } },
   });
   revalidatePath("/");
-  revalidatePath("/admin");
-  redirect(`/admin/projects/${project.id}`);
+  revalidatePath("/edit");
+  redirect(`/edit/projects/${project.id}`);
 }
 
 /**
@@ -70,8 +70,8 @@ export async function updateProject(formData: FormData) {
   });
 
   revalidatePath("/");
-  revalidatePath("/admin");
-  revalidatePath(`/admin/projects/${id}`);
+  revalidatePath("/edit");
+  revalidatePath(`/edit/projects/${id}`);
   revalidatePath(`/projects/${slug}`);
 }
 
@@ -90,7 +90,7 @@ export async function renameVersion(formData: FormData) {
   if (clash) throw new Error(`This project already has a version called "${label}"`);
 
   await db.version.update({ where: { id }, data: { label } });
-  revalidatePath(`/admin/projects/${version.projectId}`);
+  revalidatePath(`/edit/projects/${version.projectId}`);
   revalidatePath(`/projects/${version.project.slug}`);
 }
 
@@ -99,8 +99,8 @@ export async function trashProject(formData: FormData) {
   const id = String(formData.get("id"));
   await db.project.update({ where: { id }, data: { deletedAt: new Date() } });
   revalidatePath("/");
-  revalidatePath("/admin");
-  redirect("/admin");
+  revalidatePath("/edit");
+  redirect("/edit");
 }
 
 export async function restoreProject(formData: FormData) {
@@ -108,7 +108,7 @@ export async function restoreProject(formData: FormData) {
   const id = String(formData.get("id"));
   await db.project.update({ where: { id }, data: { deletedAt: null } });
   revalidatePath("/");
-  revalidatePath("/admin");
+  revalidatePath("/edit");
 }
 
 // --- Versions ---
@@ -146,7 +146,7 @@ export async function createVersion(formData: FormData) {
     }
   }
 
-  revalidatePath(`/admin/projects/${projectId}`);
+  revalidatePath(`/edit/projects/${projectId}`);
 }
 
 export async function deleteVersion(formData: FormData) {
@@ -158,7 +158,7 @@ export async function deleteVersion(formData: FormData) {
     await deleteFileObjectIfUnreferenced(f.id, f.s3Key);
   }
   await db.version.delete({ where: { id } });
-  revalidatePath(`/admin/projects/${version.projectId}`);
+  revalidatePath(`/edit/projects/${version.projectId}`);
 }
 
 // --- Files ---
@@ -191,7 +191,7 @@ export async function deleteFile(formData: FormData) {
   if (!file) return;
   await deleteFileObjectIfUnreferenced(file.id, file.s3Key);
   await db.file.delete({ where: { id } });
-  revalidatePath(`/admin/projects/${file.version.projectId}`);
+  revalidatePath(`/edit/projects/${file.version.projectId}`);
 }
 
 // --- HDRI environment (global) ---
@@ -204,7 +204,7 @@ export async function deleteHdriAsset(formData: FormData) {
   if (!asset) return;
   await deleteObject(asset.s3Key);
   await db.hdriAsset.delete({ where: { variant } });
-  revalidatePath("/admin");
+  revalidatePath("/edit");
 }
 
 // --- Camera presets ---
@@ -231,7 +231,7 @@ export async function createPreset(formData: FormData) {
       order: file.presets.length,
     },
   });
-  revalidatePath(`/admin/projects/${file.version.projectId}`);
+  revalidatePath(`/edit/projects/${file.version.projectId}`);
 }
 
 export async function deletePreset(formData: FormData) {
@@ -243,5 +243,5 @@ export async function deletePreset(formData: FormData) {
   });
   if (!preset) return;
   await db.cameraPreset.delete({ where: { id } });
-  revalidatePath(`/admin/projects/${preset.file.version.projectId}`);
+  revalidatePath(`/edit/projects/${preset.file.version.projectId}`);
 }

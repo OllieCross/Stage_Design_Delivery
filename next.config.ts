@@ -2,6 +2,13 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // /admin was renamed /edit; catches anyone still bookmarked at the old URL.
+  async redirects() {
+    return [
+      { source: "/admin", destination: "/edit", permanent: false },
+      { source: "/admin/:path*", destination: "/edit/:path*", permanent: false },
+    ];
+  },
   async headers() {
     return [
       {

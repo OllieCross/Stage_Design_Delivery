@@ -57,12 +57,21 @@ export default async function Home(props: { searchParams: Promise<{ sort?: strin
           <h1 className="text-3xl font-bold tracking-tight uppercase">White Production</h1>
           <p className="text-muted mt-1 text-sm tracking-widest uppercase">Stage design</p>
         </div>
-        <Link
-          href="/admin"
-          className="text-muted border border-neutral-700 px-3 py-2 text-xs tracking-widest uppercase transition hover:border-white hover:text-white"
-        >
-          Edit
-        </Link>
+        <div className="flex gap-2">
+          {/* Placeholder: no action wired up yet. */}
+          <button
+            type="button"
+            className="text-muted border border-neutral-700 px-3 py-2 text-xs tracking-widest uppercase transition hover:border-white hover:text-white"
+          >
+            Game
+          </button>
+          <Link
+            href="/edit"
+            className="text-muted border border-neutral-700 px-3 py-2 text-xs tracking-widest uppercase transition hover:border-white hover:text-white"
+          >
+            Edit
+          </Link>
+        </div>
       </header>
 
       <section className="mt-14">

@@ -36,7 +36,7 @@ export default async function AdminProjectPage(props: { params: Promise<{ id: st
       <div className="flex items-center justify-between">
         <div>
           <Link
-            href="/admin"
+            href="/edit"
             className="text-muted text-xs tracking-wide uppercase hover:text-white"
           >
             Projects

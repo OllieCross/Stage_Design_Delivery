@@ -53,7 +53,7 @@ export default async function AdminHome() {
         {projects.map((p) => (
           <li key={p.id}>
             <Link
-              href={`/admin/projects/${p.id}`}
+              href={`/edit/projects/${p.id}`}
               className="flex items-center justify-between px-2 py-4 transition hover:bg-neutral-900"
             >
               <div className="min-w-0">

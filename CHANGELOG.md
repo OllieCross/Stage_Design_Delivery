@@ -4,6 +4,18 @@ All notable changes to White Production are documented here.
 
 ---
 
+## v0.1.23 - 2026-09-23
+
+### Changed
+
+- **/admin is now /edit**: the dashboard and per-project editor moved from `/admin` to `/edit` (`/edit/projects/[id]`); the old URLs redirect. The `/api/admin/*` endpoints keep their names.
+
+### Added
+
+- **Game button**: a placeholder "Game" button now sits next to "Edit" on the signed-in home page. It doesn't do anything yet.
+
+---
+
 ## v0.1.22 - 2026-09-11
 
 ### Fixed
