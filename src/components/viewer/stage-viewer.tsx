@@ -8,16 +8,19 @@ import { BEAMS_ENABLED } from "@/lib/features";
 import { Beams } from "./beams";
 import { DragLook } from "./drag-look";
 import { GyroLook } from "./gyro-look";
-import { HdriPanel } from "./hdri-panel";
+import { CaptureBridge, type CaptureFn } from "./capture-bridge";
+import { HdriSection } from "./hdri-panel";
 import { HdriSky } from "./hdri-sky";
-import { LightPanel } from "./light-panel";
+import { LightSection } from "./light-panel";
 import { Movement } from "./movement";
 import { StageModel } from "./stage-model";
 import { TouchJoystick } from "./touch-joystick";
+import { ViewerMenu } from "./viewer-menu";
 import {
   DEFAULT_HDRI_SETTINGS,
   DEFAULT_LIGHT_SETTINGS,
-  EYE_HEIGHT,
+  DEFAULT_PERSON_HEIGHT,
+  eyeHeightFor,
   type Fixture,
   type HdriSettings,
   type LightSettings,
@@ -75,7 +78,7 @@ export default function StageViewer({
   const hasDay = Boolean(dayHdriUrl);
   const hasNight = Boolean(nightHdriUrl);
   // With only one side uploaded there's nothing to crossfade - the mix
-  // slider stays hidden (see HdriPanel) and that one side is used outright.
+  // slider stays hidden (see HdriSection) and that one side is used outright.
   const nearestHdriUrl =
     hasDay && hasNight
       ? hdri.mix < 0.5
@@ -89,6 +92,9 @@ export default function StageViewer({
     return [...counts.entries()].sort((a, b) => b[1] - a[1]);
   }, [fixtures]);
   const [mode, setMode] = useState<ViewMode>("bird");
+  const [personHeight, setPersonHeight] = useState(DEFAULT_PERSON_HEIGHT);
+  const eyeHeight = eyeHeightFor(personHeight);
+  const captureRef = useRef<CaptureFn | null>(null);
   const [locked, setLocked] = useState(false);
   // Rendered client-only (dynamic import with ssr: false), so window exists.
   const [isTouch] = useState(
@@ -120,7 +126,12 @@ export default function StageViewer({
     <div className="fixed inset-0 overflow-hidden bg-black">
       <Canvas
         dpr={isTouch ? [1, 1.5] : [1, 1.75]}
-        camera={{ fov: 70, near: 0.1, far: 500, position: [0, EYE_HEIGHT, 8] }}
+        camera={{
+          fov: 70,
+          near: 0.1,
+          far: 500,
+          position: [0, eyeHeightFor(DEFAULT_PERSON_HEIGHT), 8],
+        }}
         gl={{ antialias: true, powerPreference: "high-performance" }}
       >
         <hemisphereLight args={[0xffffff, 0x333344, 1.1]} />
@@ -159,7 +170,13 @@ export default function StageViewer({
           <StageModel url={modelUrl} />
         </Suspense>
         <Beams fixtures={fixtures} settings={lights} />
-        <Movement mode={mode} joystick={joystick} presetRequest={presetRequest} />
+        <Movement
+          mode={mode}
+          eyeHeight={eyeHeight}
+          joystick={joystick}
+          presetRequest={presetRequest}
+        />
+        <CaptureBridge captureRef={captureRef} />
         {!isTouch && (
           <PointerLockControls
             selector={`#${LOCK_TARGET_ID}`}
@@ -180,10 +197,12 @@ export default function StageViewer({
       {/* Top bar - pt uses the safe-area inset so it clears the notch/status
           bar when installed as a standalone PWA, same as the footer's pb. */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-2 p-4 pt-[max(1rem,env(safe-area-inset-top))]">
-        <div className="pointer-events-auto">
+        {/* Same border-on-the-wrapper recipe as the Menu button, so both
+            render at exactly the same height. */}
+        <div className="pointer-events-auto overflow-hidden border border-neutral-700 bg-black/60 backdrop-blur">
           <Link
             href={backHref}
-            className="text-muted flex min-h-11 items-center bg-black/60 px-3 text-xs tracking-widest uppercase backdrop-blur transition hover:text-white"
+            className="text-muted flex min-h-11 items-center px-3 text-xs font-semibold tracking-widest uppercase transition hover:text-white"
           >
             Back
           </Link>
@@ -191,43 +210,37 @@ export default function StageViewer({
         <p className="text-muted hidden max-w-[40%] truncate bg-black/60 px-3 py-2 text-xs tracking-widest uppercase backdrop-blur sm:block">
           {name}
         </p>
-        <div className="pointer-events-auto flex items-center gap-2">
-          {(hasDay || hasNight) && (
-            <HdriPanel settings={hdri} onChange={setHdri} hasDay={hasDay} hasNight={hasNight} />
-          )}
-          {fixtures.length > 0 && (
-            <LightPanel
-              settings={lights}
-              onChange={setLights}
-              fixtureCount={fixtures.length}
-              kindCounts={kindCounts}
-            />
-          )}
-          {isTouch && (
-            <div className="overflow-hidden border border-neutral-700 bg-black/60 backdrop-blur">
-              <button
-                onClick={toggleGyro}
-                className={`flex min-h-11 items-center px-3 text-xs font-semibold tracking-widest uppercase transition ${
-                  gyro ? "bg-white text-black" : "text-muted hover:text-white"
-                }`}
-              >
-                Gyro
-              </button>
-            </div>
-          )}
-          <div className="flex overflow-hidden border border-neutral-700 bg-black/60 backdrop-blur">
-            {(["bird", "person"] as const).map((m) => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                className={`flex min-h-11 items-center px-3 text-xs font-semibold tracking-widest uppercase transition ${
-                  mode === m ? "bg-white text-black" : "text-muted hover:text-white"
-                }`}
-              >
-                {m === "bird" ? "Bird" : "Person"}
-              </button>
-            ))}
-          </div>
+        <div className="pointer-events-auto">
+          <ViewerMenu
+            mode={mode}
+            onModeChange={setMode}
+            personHeight={personHeight}
+            onPersonHeightChange={setPersonHeight}
+            gyro={isTouch ? { enabled: gyro, onToggle: toggleGyro } : null}
+            sky={
+              hasDay || hasNight ? (
+                <HdriSection
+                  settings={hdri}
+                  onChange={setHdri}
+                  hasDay={hasDay}
+                  hasNight={hasNight}
+                />
+              ) : null
+            }
+            lights={
+              fixtures.length > 0 ? (
+                <LightSection
+                  settings={lights}
+                  onChange={setLights}
+                  fixtureCount={fixtures.length}
+                  kindCounts={kindCounts}
+                />
+              ) : null
+            }
+            capture={() => captureRef.current}
+            name={name}
+            canPrint={!isTouch}
+          />
         </div>
       </div>
 

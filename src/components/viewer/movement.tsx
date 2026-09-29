@@ -6,7 +6,7 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect } from "react";
 import * as THREE from "three";
-import { EYE_HEIGHT, type Preset, type ViewMode } from "./types";
+import type { Preset, ViewMode } from "./types";
 import { useKeys } from "./use-keys";
 
 const WALK_SPEED = 3; // m/s
@@ -20,14 +20,16 @@ const move = new THREE.Vector3();
 /**
  * Free movement driven by keyboard (and an optional external joystick
  * vector for touch devices). Bird mode flies along the look direction;
- * person mode walks on the ground plane at eye height.
+ * person mode walks on the ground plane at the given eye height.
  */
 export function Movement({
   mode,
+  eyeHeight,
   joystick,
   presetRequest,
 }: {
   mode: ViewMode;
+  eyeHeight: number;
   joystick?: React.RefObject<{ x: number; y: number }>;
   presetRequest: { seq: number; preset: Preset | null };
 }) {
@@ -38,7 +40,7 @@ export function Movement({
   useEffect(() => {
     const p = presetRequest.preset;
     if (!p) return;
-    camera.position.set(p.x, mode === "person" ? EYE_HEIGHT : p.y, p.z);
+    camera.position.set(p.x, mode === "person" ? eyeHeight : p.y, p.z);
     camera.rotation.order = "YXZ";
     camera.rotation.set(
       THREE.MathUtils.degToRad(p.pitch),
@@ -49,10 +51,10 @@ export function Movement({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- retrigger only per request
   }, [presetRequest.seq]);
 
-  // Snap to eye height when switching into person mode.
+  // Snap to eye height when switching into person mode or changing height.
   useEffect(() => {
-    if (mode === "person") camera.position.y = EYE_HEIGHT;
-  }, [mode, camera]);
+    if (mode === "person") camera.position.y = eyeHeight;
+  }, [mode, eyeHeight, camera]);
 
   useFrame((_, rawDelta) => {
     const delta = Math.min(rawDelta, 0.1);
@@ -85,7 +87,7 @@ export function Movement({
     if (move.lengthSq() > 1) move.normalize();
 
     camera.position.addScaledVector(move, speed * delta);
-    if (mode === "person") camera.position.y = EYE_HEIGHT;
+    if (mode === "person") camera.position.y = eyeHeight;
   });
 
   return null;

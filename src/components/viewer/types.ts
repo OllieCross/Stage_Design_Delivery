@@ -10,7 +10,21 @@ export type Preset = {
 
 export type ViewMode = "bird" | "person";
 
-export const EYE_HEIGHT = 1.8;
+/** Adjustable height of the person in "person" view, in meters. */
+export const PERSON_HEIGHT_MIN = 1.4;
+export const PERSON_HEIGHT_MAX = 2;
+export const DEFAULT_PERSON_HEIGHT = 1.8;
+
+/**
+ * Eye level sits below the top of the head: adult eye height averages about
+ * 93.6% of stature, so a 1.80 m person looks out from roughly 1.68 m.
+ */
+export const EYE_HEIGHT_RATIO = 0.936;
+
+export function eyeHeightFor(personHeight: number) {
+  const clamped = Math.min(PERSON_HEIGHT_MAX, Math.max(PERSON_HEIGHT_MIN, personHeight));
+  return clamped * EYE_HEIGHT_RATIO;
+}
 
 export type Fixture = {
   id: string;

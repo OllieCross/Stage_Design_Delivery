@@ -4,6 +4,22 @@ All notable changes to White Production are documented here.
 
 ---
 
+## v0.1.24 - 2026-09-29
+
+### Changed
+
+- **One menu in the 3D tour**: the separate Sky, Lights, Gyro and Bird/Person buttons are now a single expandable Menu. Bird/Person is a toggle switch, and Escape or a click outside closes the menu.
+- **Adjustable person height**: a slider sets the person between 1.40 m and 2.00 m (default 1.80 m). The camera sits at eye level, about 93.6% of that height, so the default eye height is now 1.68 m instead of 1.80 m.
+- Arrow keys pressed while a menu slider has focus no longer also move the camera.
+
+### Added
+
+- **Render**: saves the current view as a 3840 x 2160 (4K, 16:9) JPEG. Chrome and Edge ask where to save; other browsers use their normal download. It renders in the browser, with no work on the server.
+- **Print** (desktop only): renders the same 4K view onto a landscape page in a new tab and opens the browser's print dialog, where you pick the printer or "Save as PDF".
+- **Automated tests**: a Vitest suite (167 tests) covering file validation, sessions, rate limiting, MVR parsing, upload/HDRI/auth routes, server actions, the 4K capture and the tour menu. Runs with `npm test` and in CI.
+
+---
+
 ## v0.1.23 - 2026-09-23
 
 ### Changed
