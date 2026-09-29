@@ -5,9 +5,12 @@ import {
   CAPTURE_HEIGHT,
   CAPTURE_WIDTH,
   JPEG_QUALITY,
+  PRINT_HEIGHT,
+  PRINT_WIDTH,
   canvasToJpeg,
-  captureBaseName,
+  captureFileStem,
   chooseSaveTarget,
+  printCaption,
   renderViewport,
   saveBlob,
   showPrintPage,
@@ -44,11 +47,27 @@ describe("tileLayout", () => {
   });
 });
 
-describe("captureBaseName", () => {
-  it("slugs the model name and stamps the local time", () => {
-    const d = new Date(2026, 8, 29, 14, 3);
-    expect(captureBaseName("Main Stage (final).glb", d)).toBe("main-stage-final_2026-09-29_1403");
-    expect(captureBaseName("***.glb", d)).toBe("render_2026-09-29_1403");
+describe("captureFileStem", () => {
+  const d = new Date(2026, 8, 29, 14, 3);
+
+  it("is PROJECT_NAME-YYYY-MM-DD-HH-MM in local time", () => {
+    expect(captureFileStem("Hype Culture vol. 5 BB Interpolis", d)).toBe(
+      "Hype Culture vol. 5 BB Interpolis-2026-09-29-14-03",
+    );
+  });
+
+  it("drops characters filesystems reject but keeps the name readable", () => {
+    expect(captureFileStem('AC/DC: "Live"?', d)).toBe("ACDC Live-2026-09-29-14-03");
+    expect(captureFileStem("  Stage   One.  ", d)).toBe("Stage One-2026-09-29-14-03");
+    expect(captureFileStem("***", d)).toBe("Render-2026-09-29-14-03");
+  });
+});
+
+describe("printCaption", () => {
+  it("reads WHITE PRODUCTION - PROJECT - VERSION - DATE, TIME", () => {
+    expect(printCaption("Hype Culture", "v2", new Date(2026, 8, 3, 9, 5))).toBe(
+      "WHITE PRODUCTION - HYPE CULTURE - V2 - 03.09.2026, 09:05",
+    );
   });
 });
 
@@ -116,6 +135,25 @@ describe("renderViewport", () => {
     expect(camera.aspect).toBeCloseTo(390 / 844);
     expect(camera.view?.enabled ?? false).toBe(false);
     expect(renders[4].view?.enabled ?? false).toBe(false);
+  });
+
+  it("renders the print at 8K as a 4x4 grid, never above 1080p per tile", () => {
+    const { gl, camera, renders } = fakeRenderer();
+    const out = renderViewport(
+      gl as unknown as THREE.WebGLRenderer,
+      new THREE.Scene(),
+      camera,
+      PRINT_WIDTH,
+      PRINT_HEIGHT,
+    );
+    expect([out.width, out.height]).toEqual([7680, 4320]);
+    expect(renders).toHaveLength(16 + 1);
+    for (const [w, h] of gl.setSize.mock.calls.slice(0, 16)) {
+      expect(w).toBeLessThanOrEqual(1920);
+      expect(h).toBeLessThanOrEqual(1080);
+    }
+    // 7680 px across A4 landscape's ~287 mm printable width is 600+ dpi.
+    expect(PRINT_WIDTH / (287 / 25.4)).toBeGreaterThan(600);
   });
 
   it("restores the viewer even if a render throws", () => {
@@ -207,7 +245,9 @@ describe("showPrintPage", () => {
     const { doc, win } = fakeWindow();
     showPrintPage(win as unknown as Window, "blob:img", "White Production · stage.glb", "stage");
     expect(doc.title).toBe("stage");
-    expect(doc.head.textContent).toContain("size: landscape");
+    expect(doc.head.textContent).toContain("size: A4 landscape");
+    expect(doc.head.textContent).toContain("margin: 5mm");
+    expect(doc.head.textContent).toContain("print-color-adjust: exact");
     const img = doc.querySelector("img")!;
     expect(img.getAttribute("src")).toBe("blob:img");
     expect(win.print).not.toHaveBeenCalled();

@@ -4,6 +4,16 @@ All notable changes to White Production are documented here.
 
 ---
 
+## v0.1.25 - 2026-09-29
+
+### Changed
+
+- **Tour menu**: "Bird" and "Person" are now in capitals like every other label in the viewer.
+- **Render filename**: the suggested name is now `PROJECT NAME-YYYY-MM-DD-HH-MM.jpg` (project name instead of the 3D model's file name; characters filesystems reject are dropped).
+- **Print**: the page is now A4 landscape with 5 mm margins by default, and the render is 7680 x 4320 (8K) so it holds 600+ dpi of real detail across the A4 width. Dpi and colour/black-and-white are printer settings no web page can preset: pick them once in the dialog (Chrome remembers the choice per printer). The footnote now reads `WHITE PRODUCTION - PROJECT - VERSION - DD.MM.YYYY, HH:MM`, and the tab title (the default "Save as PDF" name) matches the Render filename.
+
+---
+
 ## v0.1.24 - 2026-09-29
 
 ### Changed

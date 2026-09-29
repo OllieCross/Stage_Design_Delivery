@@ -9,6 +9,19 @@ import * as THREE from "three";
 
 export const CAPTURE_WIDTH = 3840;
 export const CAPTURE_HEIGHT = 2160;
+
+/**
+ * Print renders at 8K (still 16:9). Across the ~287 mm printable width of A4
+ * landscape with 5 mm margins, 7680 px is about 680 dpi - enough real detail
+ * for a 600 dpi print, where 4K would only give ~340 dpi.
+ */
+export const PRINT_WIDTH = 7680;
+export const PRINT_HEIGHT = 4320;
+
+/** Largest tile rendered at once; stays inside every GPU's renderbuffer limit. */
+const TILE_WIDTH = 1920;
+const TILE_HEIGHT = 1080;
+
 export const JPEG_QUALITY = 0.95;
 
 export type Tile = { x: number; y: number; w: number; h: number };
@@ -37,27 +50,54 @@ export function tileLayout(width: number, height: number, cols: number, rows: nu
   return tiles;
 }
 
-/** "Main Stage.glb" + date -> "main-stage_2026-09-29_1403". */
-export function captureBaseName(name: string, date: Date) {
-  const stem =
-    name
-      .replace(/\.[^.]+$/, "")
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "render";
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const stamp = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}_${pad(
-    date.getHours(),
-  )}${pad(date.getMinutes())}`;
-  return `${stem}_${stamp}`;
+const pad = (n: number) => String(n).padStart(2, "0");
+
+/**
+ * The project name made safe as a filename on Windows, macOS and Linux:
+ * characters those systems reject are dropped, everything else (spaces,
+ * case, dots) is kept so the file reads like the project.
+ */
+function safeFileName(name: string) {
+  const cleaned = name
+    .replace(/[\\/:*?"<>|\u0000-\u001f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/[. ]+$/, "");
+  return cleaned || "Render";
+}
+
+/** "Hype Culture" + local time -> "Hype Culture-2026-09-29-14-03". */
+export function captureFileStem(projectName: string, date: Date) {
+  const stamp = [
+    date.getFullYear(),
+    pad(date.getMonth() + 1),
+    pad(date.getDate()),
+    pad(date.getHours()),
+    pad(date.getMinutes()),
+  ].join("-");
+  return `${safeFileName(projectName)}-${stamp}`;
+}
+
+/**
+ * The footnote printed under the render:
+ * "WHITE PRODUCTION - PROJECT - VERSION - DD.MM.YYYY, HH:MM" (local time,
+ * in the site's DD.MM.YYYY date format).
+ */
+export function printCaption(projectName: string, versionLabel: string, date: Date) {
+  const day = `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()}`;
+  const time = `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  return ["White Production", projectName, versionLabel, `${day}, ${time}`]
+    .join(" - ")
+    .toUpperCase();
 }
 
 /**
  * Renders the current camera view at width x height (16:9 by default) into a
  * 2D canvas. The WebGL drawing buffer is never enlarged past one tile: the
- * frame is rendered as a 2x2 grid of camera view offsets, each 1920x1080,
- * which stays inside every GPU's maximum renderbuffer size (phones included)
- * while still producing a seamless full-resolution image.
+ * frame is rendered as a grid of camera view offsets of at most 1920x1080
+ * each (2x2 for 4K, 4x4 for the 8K print), which stays inside every GPU's
+ * maximum renderbuffer size (phones included) while still producing a
+ * seamless full-resolution image.
  *
  * Everything happens synchronously inside one task, so each tile is copied
  * out of the drawing buffer before the browser could clear it - no
@@ -77,7 +117,12 @@ export function renderViewport(
   const ctx = out.getContext("2d");
   if (!ctx) throw new Error("Could not create a 2D canvas for the capture");
 
-  const tiles = tileLayout(width, height, 2, 2);
+  const tiles = tileLayout(
+    width,
+    height,
+    Math.ceil(width / TILE_WIDTH),
+    Math.ceil(height / TILE_HEIGHT),
+  );
   const prevSize = gl.getSize(new THREE.Vector2());
   const prevRatio = gl.getPixelRatio();
   const prevAspect = camera.aspect;
@@ -168,9 +213,12 @@ export async function saveBlob(blob: Blob, filename: string, target: SaveTarget)
 
 /**
  * Fills a tab opened (synchronously, on the click) with window.open("") with a
- * single landscape page holding the image and a caption, then opens the
- * browser's print dialog - printer choice, paper, and "Save as PDF" all come
- * from there. Built with DOM APIs rather than document.write, so the caption
+ * single A4 landscape page holding the image and a caption, then opens the
+ * browser's print dialog. The @page rule makes A4 landscape with minimal
+ * (5 mm) margins the dialog's default; printer, dpi and colour mode are
+ * printer-driver settings no web page can preset, so those stay the user's
+ * pick in the dialog. The tab title doubles as the default "Save as PDF"
+ * filename. Built with DOM APIs rather than document.write, so the caption
  * text can never be interpreted as markup.
  */
 export function showPrintPage(win: Window, imageUrl: string, caption: string, title: string) {
@@ -179,11 +227,12 @@ export function showPrintPage(win: Window, imageUrl: string, caption: string, ti
 
   const style = doc.createElement("style");
   style.textContent = `
-    @page { size: landscape; margin: 10mm; }
+    @page { size: A4 landscape; margin: 5mm; }
     html, body { margin: 0; background: #fff; color: #444; }
-    body { font: 10px "Helvetica Neue", Helvetica, Arial, sans-serif; padding: 10mm; }
+    html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body { font: 8px "Helvetica Neue", Helvetica, Arial, sans-serif; padding: 5mm; }
     img { display: block; width: 100%; height: auto; }
-    p { margin: 3mm 0 0; letter-spacing: 0.08em; text-transform: uppercase; }
+    p { margin: 2mm 0 0; letter-spacing: 0.08em; text-transform: uppercase; }
     @media print { body { padding: 0; } }
   `;
   doc.head.appendChild(style);

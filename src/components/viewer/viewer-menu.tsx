@@ -2,9 +2,12 @@
 
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import {
+  PRINT_HEIGHT,
+  PRINT_WIDTH,
   canvasToJpeg,
-  captureBaseName,
+  captureFileStem,
   chooseSaveTarget,
+  printCaption,
   saveBlob,
   showPrintPage,
 } from "./capture";
@@ -38,7 +41,8 @@ export function ViewerMenu({
   sky,
   lights,
   capture,
-  name,
+  projectName,
+  versionLabel,
   canPrint,
 }: {
   mode: ViewMode;
@@ -50,7 +54,8 @@ export function ViewerMenu({
   sky: ReactNode;
   lights: ReactNode;
   capture: () => CaptureFn | null;
-  name: string;
+  projectName: string;
+  versionLabel: string;
   /** Print is desktop-only. */
   canPrint: boolean;
 }) {
@@ -77,17 +82,17 @@ export function ViewerMenu({
     };
   }, [open]);
 
-  function takeCapture() {
+  function takeCapture(width?: number, height?: number) {
     const fn = capture();
     if (!fn) throw new Error("The viewer isn't ready yet");
-    return fn();
+    return fn(width, height);
   }
 
   async function handleRender() {
     setError(null);
     setBusy("render");
     try {
-      const filename = `${captureBaseName(name, new Date())}.jpg`;
+      const filename = `${captureFileStem(projectName, new Date())}.jpg`;
       // Ask where to save first, while the click still counts as a user
       // gesture - the save dialog can't be opened after a long render.
       const target = await chooseSaveTarget(filename);
@@ -113,13 +118,13 @@ export function ViewerMenu({
     win.document.body.textContent = "Rendering...";
     setBusy("print");
     try {
-      const blob = await canvasToJpeg(takeCapture());
+      const blob = await canvasToJpeg(takeCapture(PRINT_WIDTH, PRINT_HEIGHT));
       const now = new Date();
       showPrintPage(
         win,
         URL.createObjectURL(blob),
-        `White Production · ${name} · ${now.toLocaleString()}`,
-        captureBaseName(name, now),
+        printCaption(projectName, versionLabel, now),
+        captureFileStem(projectName, now),
       );
     } catch (e) {
       win.close();
@@ -167,7 +172,7 @@ export function ViewerMenu({
               <button
                 type="button"
                 onClick={() => onModeChange("bird")}
-                className={`min-h-11 ${mode === "bird" ? "text-white" : "text-muted hover:text-white"}`}
+                className={`min-h-11 uppercase ${mode === "bird" ? "text-white" : "text-muted hover:text-white"}`}
               >
                 Bird
               </button>
@@ -179,7 +184,7 @@ export function ViewerMenu({
               <button
                 type="button"
                 onClick={() => onModeChange("person")}
-                className={`min-h-11 ${mode === "person" ? "text-white" : "text-muted hover:text-white"}`}
+                className={`min-h-11 uppercase ${mode === "person" ? "text-white" : "text-muted hover:text-white"}`}
               >
                 Person
               </button>
@@ -209,7 +214,7 @@ export function ViewerMenu({
           {sky && <Section>{sky}</Section>}
           {lights && <Section>{lights}</Section>}
 
-          <Section title="Export 4K">
+          <Section title="Export">
             <div className="flex gap-2">
               <button
                 type="button"
@@ -231,8 +236,8 @@ export function ViewerMenu({
               )}
             </div>
             <p className="text-muted mt-2 text-[10px] leading-relaxed">
-              3840 × 2160 of the current view.{" "}
-              {canPrint ? "Render saves a JPEG; Print opens your print dialog." : "Saves a JPEG."}
+              Render saves the current view as a 4K JPEG.
+              {canPrint && " Print lays it out on A4 landscape at 600+ dpi."}
             </p>
             {error && (
               <p role="alert" className="mt-2 text-xs text-red-400">

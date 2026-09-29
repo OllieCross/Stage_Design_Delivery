@@ -62,6 +62,8 @@ export default function StageViewer({
   fixtures: allFixtures,
   backHref,
   name,
+  projectName,
+  versionLabel,
   dayHdriUrl,
   nightHdriUrl,
 }: {
@@ -70,6 +72,8 @@ export default function StageViewer({
   fixtures: Fixture[];
   backHref: string;
   name: string;
+  projectName: string;
+  versionLabel: string;
   dayHdriUrl?: string;
   nightHdriUrl?: string;
 }) {
@@ -238,7 +242,8 @@ export default function StageViewer({
               ) : null
             }
             capture={() => captureRef.current}
-            name={name}
+            projectName={projectName}
+            versionLabel={versionLabel}
             canPrint={!isTouch}
           />
         </div>

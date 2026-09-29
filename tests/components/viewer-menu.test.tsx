@@ -18,7 +18,8 @@ function setup(overrides: Partial<Parameters<typeof ViewerMenu>[0]> = {}) {
     sky: null,
     lights: null,
     capture: vi.fn(() => vi.fn(fakeCanvas)),
-    name: "Main Stage.glb",
+    projectName: "Hype Culture",
+    versionLabel: "v2",
     canPrint: true,
     ...overrides,
   };
@@ -44,7 +45,8 @@ describe("ViewerMenu", () => {
         sky={null}
         lights={null}
         capture={() => null}
-        name="x"
+        projectName="x"
+        versionLabel="v1"
         canPrint
       />,
     );
@@ -64,6 +66,15 @@ describe("ViewerMenu", () => {
     expect(props.onModeChange).toHaveBeenLastCalledWith("person");
     fireEvent.click(screen.getByRole("button", { name: "Bird" }));
     expect(props.onModeChange).toHaveBeenLastCalledWith("bird");
+  });
+
+  it("renders the Bird/Person labels in caps like the rest of the viewer", () => {
+    setup();
+    // Preflight resets text-transform on <button>, so the class has to be on
+    // the buttons themselves, not just their container.
+    for (const name of ["Bird", "Person"]) {
+      expect(screen.getByRole("button", { name }).className).toMatch(/\buppercase\b/);
+    }
   });
 
   it("shows the switch as on in person mode", () => {
@@ -109,15 +120,15 @@ describe("ViewerMenu", () => {
     expect(screen.queryByRole("switch", { name: "Person view" })).toBeNull();
   });
 
-  it("Render captures the view and downloads a timestamped JPEG", async () => {
+  it("Render captures the 4K view and downloads PROJECT-YYYY-MM-DD-HH-MM.jpg", async () => {
     const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
     const shot = vi.fn(fakeCanvas);
     setup({ capture: () => shot });
     fireEvent.click(screen.getByRole("button", { name: "Render" }));
     await waitFor(() => expect(click).toHaveBeenCalled());
-    expect(shot).toHaveBeenCalledTimes(1);
+    expect(shot).toHaveBeenCalledWith(undefined, undefined); // default 4K
     const anchor = click.mock.contexts[0] as HTMLAnchorElement;
-    expect(anchor.download).toMatch(/^main-stage_\d{4}-\d{2}-\d{2}_\d{4}\.jpg$/);
+    expect(anchor.download).toMatch(/^Hype Culture-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}\.jpg$/);
   });
 
   it("Render does nothing if the Save dialog is cancelled", async () => {
@@ -145,7 +156,7 @@ describe("ViewerMenu", () => {
     );
   });
 
-  it("Print opens a tab with the 4K render and the print dialog", async () => {
+  it("Print opens a tab with the 8K render, footnote and the print dialog", async () => {
     const doc = document.implementation.createHTMLDocument("");
     const win = {
       document: doc,
@@ -161,8 +172,11 @@ describe("ViewerMenu", () => {
     fireEvent.click(screen.getByRole("button", { name: "Print" }));
     expect(open).toHaveBeenCalledWith("", "_blank");
     await waitFor(() => expect(doc.querySelector("img")).not.toBeNull());
-    expect(shot).toHaveBeenCalledTimes(1);
-    expect(doc.querySelector("p")!.textContent).toContain("Main Stage.glb");
+    expect(shot).toHaveBeenCalledWith(7680, 4320);
+    expect(doc.querySelector("p")!.textContent).toMatch(
+      /^WHITE PRODUCTION - HYPE CULTURE - V2 - \d{2}\.\d{2}\.\d{4}, \d{2}:\d{2}$/,
+    );
+    expect(doc.title).toMatch(/^Hype Culture-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}$/);
     doc.querySelector("img")!.dispatchEvent(new Event("load"));
     expect(win.print).toHaveBeenCalled();
   });

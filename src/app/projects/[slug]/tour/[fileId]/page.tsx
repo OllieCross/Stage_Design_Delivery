@@ -14,7 +14,9 @@ export default async function TourPage(props: {
     where: { id: fileId },
     include: {
       version: {
-        include: { project: { select: { slug: true, deletedAt: true, hidden: true } } },
+        include: {
+          project: { select: { name: true, slug: true, deletedAt: true, hidden: true } },
+        },
       },
       presets: { orderBy: { order: "asc" } },
     },
@@ -62,6 +64,8 @@ export default async function TourPage(props: {
       fixtures={fixtures}
       backHref={`/projects/${slug}`}
       name={file.name}
+      projectName={file.version.project.name}
+      versionLabel={file.version.label}
       dayHdriUrl={dayHdri && hdriUrl("DAY", dayHdri)}
       nightHdriUrl={nightHdri && hdriUrl("NIGHT", nightHdri)}
     />
