@@ -172,7 +172,7 @@ volumes:
     driver: local
     driver_opts:
       type: nfs
-      o: addr=192.168.0.22,nfsvers=4,rw,soft
+      o: addr=${NAS_HOST:?set NAS_HOST in .env},nfsvers=4,rw,soft
       device: ":/volume3/Homelab_Backups/white-production"
 
 networks:

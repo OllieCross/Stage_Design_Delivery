@@ -56,9 +56,9 @@ from `.env`, and register your passkey (store it in 1Password). From then on, lo
 
 ### Backups
 
-Two sidecars back up nightly at 02:30 (server local time) to the Synology NAS over NFS,
-`192.168.0.22:/volume3/Homelab_Backups/white-production`. Each run overwrites the
-previous one:
+Two sidecars back up nightly at 02:30 (server local time) to the Synology NAS over NFS
+(share `/volume3/Homelab_Backups/white-production`; the NAS address is `NAS_HOST` in
+`.env`). Each run overwrites the previous one:
 
 - `postgres-backup`: `pg_dump` to `postgres.sql.gz`. A failed dump keeps the last good file.
 - `minio-backup`: archive of the `minio_data` volume to `minio-backup.tar.gz`.
