@@ -105,9 +105,75 @@ services:
     networks:
       - internal
 
+  # Nightly at 02:30 local time: dumps Postgres to the NAS. Dumps to a temp file
+  # and renames it, so a failed dump never overwrites the last good backup.
+  postgres-backup:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    entrypoint: >
+      sh -c "
+        set -o pipefail;
+        while true; do
+          sleep $$(( ($$(date -d 02:30 +%s) - $$(date +%s) + 86400) % 86400 ));
+          if PGPASSWORD=$${POSTGRES_PASSWORD} pg_dump -h wp-postgres -U $${POSTGRES_USER} $${POSTGRES_DB} | gzip > /backups/postgres.sql.gz.tmp; then
+            mv /backups/postgres.sql.gz.tmp /backups/postgres.sql.gz;
+          else
+            rm -f /backups/postgres.sql.gz.tmp;
+          fi;
+          sleep 60;
+        done
+      "
+    volumes:
+      - type: volume
+        source: nas_backups
+        target: /backups
+        volume:
+          nocopy: true
+      - /etc/localtime:/etc/localtime:ro
+    # The image declares a data VOLUME; tmpfs stops an anonymous volume piling
+    # up on every recreate.
+    tmpfs:
+      - /var/lib/postgresql/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
+
+  # Nightly at 02:30 local time: archives the MinIO volume to the NAS.
+  minio-backup:
+    image: offen/docker-volume-backup:v2
+    restart: unless-stopped
+    environment:
+      BACKUP_CRON_EXPRESSION: "30 2 * * *"
+      BACKUP_FILENAME: "minio-backup.tar.gz"
+    volumes:
+      - minio_data:/backup/minio_data:ro
+      - type: volume
+        source: nas_backups
+        target: /archive
+        volume:
+          nocopy: true
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - internal
+
 volumes:
   pg_data:
   minio_data:
+  # Synology NAS share; each nightly backup overwrites the previous one. The
+  # share's NFS rule needs squash "Map all users to admin": the Docker daemon
+  # uses userns-remap, so container root reaches the NAS as an unknown uid.
+  nas_backups:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=192.168.0.22,nfsvers=4,rw,soft
+      device: ":/volume3/Homelab_Backups/white-production"
 
 networks:
   internal:

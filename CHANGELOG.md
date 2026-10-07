@@ -4,6 +4,14 @@ All notable changes to White Production are documented here.
 
 ---
 
+## v0.1.26 - 2026-10-07
+
+### Added
+
+- **Nightly backups to the NAS**: two new sidecars back up at 02:30 to the Synology NAS over NFS (`/volume3/Homelab_Backups/white-production`). `postgres-backup` writes a `pg_dump` to `postgres.sql.gz`, and `minio-backup` archives the MinIO volume to `minio-backup.tar.gz`. Each run overwrites the previous one, and a failed Postgres dump keeps the last good file.
+
+---
+
 ## v0.1.25 - 2026-09-29
 
 ### Changed

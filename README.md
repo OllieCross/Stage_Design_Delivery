@@ -43,9 +43,10 @@ docker compose up -d --build
 ```
 
 Services: `web` (Next.js standalone), `postgres` (17), `minio`, a one-shot `minio-init`
-that creates the bucket, and a one-shot `migrate` that applies Prisma migrations before
-the app starts. Postgres and MinIO are on an internal network only; nothing but the
-web app is exposed through Traefik at `wp.olliecross.com`.
+that creates the bucket, a one-shot `migrate` that applies Prisma migrations before
+the app starts, and two backup sidecars (see [Backups](#backups)). Postgres and MinIO
+are on an internal network only; nothing but the web app is exposed through Traefik at
+`wp.olliecross.com`.
 
 ### First-time setup
 
@@ -55,8 +56,26 @@ from `.env`, and register your passkey (store it in 1Password). From then on, lo
 
 ### Backups
 
-Back up the `pg_data` and `minio_data` volumes. For Postgres, prefer
-`docker compose exec postgres pg_dump -U $POSTGRES_USER $POSTGRES_DB > backup.sql`.
+Two sidecars back up nightly at 02:30 (server local time) to the Synology NAS over NFS,
+`192.168.0.22:/volume3/Homelab_Backups/white-production`. Each run overwrites the
+previous one:
+
+- `postgres-backup`: `pg_dump` to `postgres.sql.gz`. A failed dump keeps the last good file.
+- `minio-backup`: archive of the `minio_data` volume to `minio-backup.tar.gz`.
+
+The NAS share's NFS rule must allow the Docker host read/write with squash "Map all
+users to admin". The `white-production` folder must exist on the share before the first
+`docker compose up`.
+
+Back up right now:
+
+```bash
+docker compose exec minio-backup backup
+docker compose exec postgres-backup sh -c 'PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -h wp-postgres -U "$POSTGRES_USER" "$POSTGRES_DB" | gzip > /backups/postgres.sql.gz'
+```
+
+Restore Postgres into an empty database:
+`gunzip -c postgres.sql.gz | docker compose exec -T postgres psql -U $POSTGRES_USER $POSTGRES_DB`.
 
 ## Project structure
 
