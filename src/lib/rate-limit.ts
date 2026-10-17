@@ -4,7 +4,7 @@ const WINDOW_MS = 60_000;
 const MAX_PER_WINDOW = 10;
 
 /**
- * Fixed-window in-memory rate limiter for the auth endpoints. Single-node
+ * Fixed-window in-memory rate limiter (used by the upload endpoints). Single-node
  * deployment, so process-local state is sufficient.
  */
 export function rateLimit(key: string, max: number = MAX_PER_WINDOW): boolean {

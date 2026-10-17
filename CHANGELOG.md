@@ -4,6 +4,14 @@ All notable changes to White Production are documented here.
 
 ---
 
+## v0.1.27 - 2026-10-17
+
+### Removed
+
+- **Passkey login**: the site no longer has any authentication. Every visitor is the admin: the project list, `/edit`, uploads and hidden projects are open to anyone who can reach the site. The Login and Log out buttons, the `/setup` page, the `/api/auth/*` routes and the `@simplewebauthn` packages are gone, and `APP_URL`, `SESSION_SECRET` and `SETUP_TOKEN` are no longer used. Registered passkeys stay in the database's `Credential` table, unused.
+
+---
+
 ## v0.1.26 - 2026-10-07
 
 ### Added

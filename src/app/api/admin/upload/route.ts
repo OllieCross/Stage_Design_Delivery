@@ -13,7 +13,7 @@ import { clientKey, rateLimit } from "@/lib/rate-limit";
 import { putObject } from "@/lib/s3";
 import { isAdmin } from "@/lib/session";
 
-// Generous compared to the auth endpoints' 10/min: a drag-and-drop batch of
+// Generous compared to the limiter's default 10/min: a drag-and-drop batch of
 // photos or plots is many requests in quick succession from one admin.
 const UPLOAD_MAX_PER_WINDOW = 60;
 

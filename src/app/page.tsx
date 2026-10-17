@@ -1,8 +1,6 @@
 import Link from "next/link";
-import { PasskeyLogin } from "@/components/passkey-login";
 import { formatDate } from "@/lib/dates";
 import { db } from "@/lib/db";
-import { isAdmin } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -15,30 +13,12 @@ const SORTS = {
 type Sort = keyof typeof SORTS;
 
 export default async function Home(props: { searchParams: Promise<{ sort?: string }> }) {
-  const admin = await isAdmin();
-
-  // A signed-out visitor gets the header and the Login button, nothing else -
-  // no project data is fetched or rendered here at all. Every project still
-  // opens directly at /projects/[slug] for whoever holds that link; this page
-  // is just no longer how someone finds one.
-  if (!admin) {
-    return (
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-6 py-12 text-center">
-        <h1 className="text-3xl font-bold tracking-tight uppercase">White Production</h1>
-        <p className="text-muted mt-1 text-sm tracking-widest uppercase">Stage design</p>
-        <div className="mt-8">
-          <PasskeyLogin />
-        </div>
-      </main>
-    );
-  }
-
   const { sort: sortParam } = await props.searchParams;
   const sort: Sort = sortParam === "event" || sortParam === "name" ? sortParam : "added";
 
   const projects = await db.project.findMany({
-    // Hidden projects are still admin-only, but this page is admin-only to
-    // begin with now, so there's nothing further to filter on that basis.
+    // There is no login: every visitor is the admin (see lib/session), so
+    // hidden projects are listed too, with their Hidden badge.
     where: { deletedAt: null },
     orderBy:
       sort === "name"

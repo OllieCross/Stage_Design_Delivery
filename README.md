@@ -1,8 +1,8 @@
 # White Production - Stage Design Delivery Platform
 
 Delivery platform and PWA for stage design projects: PDFs, images, CSV tables, and first-person
-3D stage tours (GLB models), grouped by project and version. Single-admin (passkey login),
-clients access projects via shared URLs.
+3D stage tours (GLB models), grouped by project and version. There is no login: every visitor has full admin
+access (see [Access](#access)), and clients open projects via shared URLs.
 
 **Stack:** Next.js (App Router, TypeScript) · Three.js · PostgreSQL · MinIO (S3) · Docker Compose · Traefik
 
@@ -48,11 +48,12 @@ the app starts, and two backup sidecars (see [Backups](#backups)). Postgres and 
 are on an internal network only; nothing but the web app is exposed through Traefik at
 `wp.olliecross.com`.
 
-### First-time setup
+### Access
 
-After the first deploy, open `https://wp.olliecross.com/setup`, enter the `SETUP_TOKEN`
-from `.env`, and register your passkey (store it in 1Password). From then on, log in at
-`/login`. Registration always requires either the setup token or an active admin session.
+The site has no authentication. Anyone who can reach `wp.olliecross.com` can open
+`/edit`, create, change and delete projects, versions and files, upload to MinIO and
+see hidden projects. Passkey login was removed in v0.1.27. To restrict access again,
+gate it in `src/lib/session.ts` (`isAdmin`) or in front of the app at Traefik.
 
 ### Backups
 
