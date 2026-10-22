@@ -30,7 +30,8 @@ export default async function ProjectPage(props: {
   });
   if (!project || project.deletedAt || project.versions.length === 0) notFound();
   // A hidden project is admin-only, including by direct link.
-  if (project.hidden && !(await isAdmin())) notFound();
+  const admin = await isAdmin();
+  if (project.hidden && !admin) notFound();
 
   const selected = project.versions.find((v) => v.label === versionParam) ?? project.versions[0];
 
@@ -49,9 +50,13 @@ export default async function ProjectPage(props: {
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-12">
       <header>
-        <Link href="/" className="text-muted text-xs tracking-widest uppercase hover:text-white">
-          White Production
-        </Link>
+        {admin ? (
+          <Link href="/" className="text-muted text-xs tracking-widest uppercase hover:text-white">
+            White Production
+          </Link>
+        ) : (
+          <span className="text-muted text-xs tracking-widest uppercase">White Production</span>
+        )}
         <h1 className="mt-2 text-3xl font-bold tracking-tight uppercase">{project.name}</h1>
         <p className="text-muted mt-1 text-xs tracking-widest uppercase">
           {formatDate(project.eventDate)}

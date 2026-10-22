@@ -50,10 +50,11 @@ are on an internal network only; nothing but the web app is exposed through Trae
 
 ### Access
 
-The site has no authentication. Anyone who can reach `wp.olliecross.com` can open
-`/edit`, create, change and delete projects, versions and files, upload to MinIO and
-see hidden projects. Passkey login was removed in v0.1.27. To restrict access again,
-gate it in `src/lib/session.ts` (`isAdmin`) or in front of the app at Traefik.
+The project list (`/`) and `/edit` need a login: `ADMIN_USER` and `ADMIN_PASSWORD` from `.env`,
+with a signed 30-day cookie keyed by `SESSION_SECRET`. Individual project pages
+(`/projects/<slug>`) and their files stay public so clients can open shared links without
+logging in; hidden projects are visible to the logged-in admin only. Login attempts are limited
+to 5 per minute per IP. After changing the credentials, restart the `web` container.
 
 ### Backups
 

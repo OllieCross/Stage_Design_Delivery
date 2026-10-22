@@ -4,6 +4,14 @@ All notable changes to White Production are documented here.
 
 ---
 
+## v0.1.28 - 2026-10-22
+
+### Added
+
+- **Login**: the project list and `/edit` now sit behind a username/password login (`ADMIN_USER`, `ADMIN_PASSWORD`, `SESSION_SECRET` in `.env`), with Log out buttons on the home and edit pages. Individual project pages and their files stay public for clients. Hidden projects are admin-only again. Failed logins are limited to 5 per minute per IP.
+
+---
+
 ## v0.1.27 - 2026-10-17
 
 ### Removed

@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { formatDate } from "@/lib/dates";
 import { db } from "@/lib/db";
+import { isAdmin } from "@/lib/session";
+import { logout } from "@/server/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -13,12 +16,15 @@ const SORTS = {
 type Sort = keyof typeof SORTS;
 
 export default async function Home(props: { searchParams: Promise<{ sort?: string }> }) {
+  // The project list is private; individual project links stay public.
+  if (!(await isAdmin())) redirect("/login");
+
   const { sort: sortParam } = await props.searchParams;
   const sort: Sort = sortParam === "event" || sortParam === "name" ? sortParam : "added";
 
   const projects = await db.project.findMany({
-    // There is no login: every visitor is the admin (see lib/session), so
-    // hidden projects are listed too, with their Hidden badge.
+    // Only the logged-in admin reaches this page, so hidden projects are
+    // listed too, with their Hidden badge.
     where: { deletedAt: null },
     orderBy:
       sort === "name"
@@ -51,6 +57,14 @@ export default async function Home(props: { searchParams: Promise<{ sort?: strin
           >
             Edit
           </Link>
+          <form action={logout}>
+            <button
+              type="submit"
+              className="text-muted border border-neutral-700 px-3 py-2 text-xs tracking-widest uppercase transition hover:border-white hover:text-white"
+            >
+              Log out
+            </button>
+          </form>
         </div>
       </header>
 
